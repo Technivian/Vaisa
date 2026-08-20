@@ -3,8 +3,10 @@ import { createEscalation, type Escalation } from "@/lib/escalation";
 import {
   parseStoredEscalations,
   addEscalation,
+  setEscalationStatus,
   loadStoredEscalations,
   saveEscalation,
+  updateEscalationStatus,
   clearStoredEscalations,
   ESCALATIONS_STORAGE_KEY,
 } from "@/lib/clientEscalations";
@@ -48,6 +50,36 @@ describe("parseStoredEscalations", () => {
   it("rejects an entry with an invalid urgency value", () => {
     const invalid = { ...makeEscalation(), urgency: "extreme" };
     expect(parseStoredEscalations(JSON.stringify([invalid]))).toEqual([]);
+  });
+
+  it("rejects an entry with an invalid status value", () => {
+    const invalid = { ...makeEscalation(), status: "closed" };
+    expect(parseStoredEscalations(JSON.stringify([invalid]))).toEqual([]);
+  });
+
+  it("accepts every valid status value", () => {
+    for (const status of ["open", "review", "resolved"] as const) {
+      const valid = makeEscalation({ status });
+      expect(parseStoredEscalations(JSON.stringify([valid]))).toEqual([valid]);
+    }
+  });
+});
+
+describe("setEscalationStatus", () => {
+  it("updates the status of the matching escalation only", () => {
+    const a = makeEscalation({ id: "ESC-A0000001", status: "open" });
+    const b = makeEscalation({ id: "ESC-B0000001", status: "open" });
+
+    const result = setEscalationStatus([a, b], "ESC-B0000001", "resolved");
+
+    expect(result.find((e) => e.id === "ESC-A0000001")?.status).toBe("open");
+    expect(result.find((e) => e.id === "ESC-B0000001")?.status).toBe("resolved");
+  });
+
+  it("is a no-op for an id that isn't in the list (e.g. a sample case)", () => {
+    const a = makeEscalation({ id: "ESC-A0000001" });
+    const result = setEscalationStatus([a], "ESC-SAMPLE-01", "resolved");
+    expect(result).toEqual([a]);
   });
 });
 
@@ -106,7 +138,7 @@ class FakeLocalStorage {
 
 describe("browser storage wrappers with a real (stubbed) localStorage", () => {
   beforeEach(() => {
-    vi.stubGlobal("window", { localStorage: new FakeLocalStorage() });
+    vi.stubGlobal("window", { localStorage: new FakeLocalStorage(), dispatchEvent: () => true });
   });
 
   afterEach(() => {
@@ -153,5 +185,33 @@ describe("browser storage wrappers with a real (stubbed) localStorage", () => {
       "{ this is not valid JSON"
     );
     expect(loadStoredEscalations()).toEqual([]);
+  });
+
+  it("updateEscalationStatus persists the new status", () => {
+    const escalation = makeEscalation({ id: "ESC-STATUS001", status: "open" });
+    saveEscalation(escalation);
+
+    updateEscalationStatus("ESC-STATUS001", "review");
+
+    expect(loadStoredEscalations()[0].status).toBe("review");
+  });
+
+  it("updateEscalationStatus does not affect other stored escalations", () => {
+    const a = makeEscalation({ id: "ESC-STATUS00A", status: "open" });
+    const b = makeEscalation({ id: "ESC-STATUS00B", status: "open" });
+    saveEscalation(a);
+    saveEscalation(b);
+
+    updateEscalationStatus("ESC-STATUS00A", "resolved");
+
+    const stored = loadStoredEscalations();
+    expect(stored.find((e) => e.id === "ESC-STATUS00A")?.status).toBe("resolved");
+    expect(stored.find((e) => e.id === "ESC-STATUS00B")?.status).toBe("open");
+  });
+
+  it("updateEscalationStatus for an unknown id (e.g. a sample case) does not throw or add anything", () => {
+    saveEscalation(makeEscalation({ id: "ESC-REAL0001" }));
+    expect(() => updateEscalationStatus("ESC-SAMPLE-01", "resolved")).not.toThrow();
+    expect(loadStoredEscalations()).toHaveLength(1);
   });
 });

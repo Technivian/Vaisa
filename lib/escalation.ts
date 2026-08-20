@@ -2,6 +2,12 @@ import crypto from "crypto";
 
 export type Urgency = "low" | "medium" | "high";
 
+/** Open: not yet looked at. Review: a colleague is assessing it. Resolved:
+ * closed out. This is purely a browser-persisted demo affordance (see
+ * lib/clientEscalations.ts `updateEscalationStatus`) — there is no backend
+ * workflow behind it. */
+export type EscalationStatus = "open" | "review" | "resolved";
+
 export interface TranscriptTurn {
   role: "customer" | "assistant";
   content: string;
@@ -16,7 +22,7 @@ export interface Escalation {
   urgency: Urgency;
   recommendedAction: string;
   transcript: TranscriptTurn[];
-  status: "open";
+  status: EscalationStatus;
 }
 
 export interface EscalationInput {

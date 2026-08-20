@@ -1,6 +1,18 @@
-import type { Escalation } from "./escalation";
+import type { Escalation, EscalationStatus } from "./escalation";
 
 export const ESCALATIONS_STORAGE_KEY = "vaisa_escalations";
+
+/** The native `storage` event only fires in *other* tabs, never the tab
+ * that made the write — so a same-tab UI (like the dashboard's status
+ * dropdown updating its own list) needs its own signal. Every write below
+ * dispatches this after updating localStorage; useSyncExternalStore
+ * subscribers listen for both this and `storage`. */
+export const ESCALATIONS_CHANGE_EVENT = "vaisa-escalations-changed";
+
+function notifyChange(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(ESCALATIONS_CHANGE_EVENT));
+}
 
 function isValidEscalation(value: unknown): value is Escalation {
   if (!value || typeof value !== "object") return false;
@@ -14,7 +26,7 @@ function isValidEscalation(value: unknown): value is Escalation {
     (e.urgency === "low" || e.urgency === "medium" || e.urgency === "high") &&
     typeof e.recommendedAction === "string" &&
     Array.isArray(e.transcript) &&
-    e.status === "open"
+    (e.status === "open" || e.status === "review" || e.status === "resolved")
   );
 }
 
@@ -63,9 +75,38 @@ export function saveEscalation(escalation: Escalation): Escalation[] {
   if (typeof window !== "undefined") {
     try {
       window.localStorage.setItem(ESCALATIONS_STORAGE_KEY, JSON.stringify(updated));
+      notifyChange();
     } catch {
       // Storage unavailable or full — the demo continues, just without
       // persistence for this escalation.
+    }
+  }
+  return updated;
+}
+
+/** Updates the status of one stored escalation by id (pure — no I/O).
+ * Unknown ids are a no-op — the list is returned unchanged, which matters
+ * for sample/demo-only cases that are never actually in localStorage. */
+export function setEscalationStatus(
+  existing: Escalation[],
+  id: string,
+  status: EscalationStatus
+): Escalation[] {
+  return existing.map((e) => (e.id === id ? { ...e, status } : e));
+}
+
+/** Updates and persists the status of one stored escalation. No-ops
+ * during SSR. Used by the presenter-facing status control on real
+ * (non-sample) cases only. */
+export function updateEscalationStatus(id: string, status: EscalationStatus): Escalation[] {
+  const updated = setEscalationStatus(loadStoredEscalations(), id, status);
+  if (typeof window !== "undefined") {
+    try {
+      window.localStorage.setItem(ESCALATIONS_STORAGE_KEY, JSON.stringify(updated));
+      notifyChange();
+    } catch {
+      // Storage unavailable or full — the demo continues without
+      // persisting this particular status change.
     }
   }
   return updated;
@@ -76,6 +117,7 @@ export function clearStoredEscalations(): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(ESCALATIONS_STORAGE_KEY);
+    notifyChange();
   } catch {
     // ignore
   }
