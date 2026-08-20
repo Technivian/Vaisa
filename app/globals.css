@@ -3,20 +3,23 @@
 /*
  * VAISA design tokens.
  *
- * Existing values (background, foreground, brand, brand-dark, ink,
- * surface, border) are untouched on purpose — the customer chat already
- * relies on them and this pass is scoped to the dashboard. Everything
- * below is additive.
+ * Palette methodology follows the Radix Colors / shadcn approach (no new
+ * dependency — just the same design discipline): every semantic colour is
+ * desaturated and shares the app's warm-neutral undertone, rather than
+ * using default-chart primaries (pure #ff0000 red, pure #0000ff blue,
+ * etc). One confident accent (the VONROC coral) carries the brand; the
+ * status colours are muted enough to sit quietly until they need to mean
+ * something, so a KPI row or badge set doesn't read like a spreadsheet.
  *
  * Naming maps to the spec's semantic vocabulary as follows:
  *   --background      -> `surface` (already means "page canvas")
  *   --surface          -> plain Tailwind `white`
- *   --surface-subtle    -> `surface-subtle` (new)
+ *   --surface-subtle    -> `surface-subtle`
  *   --text-primary       -> `ink` (already primary text / header bg)
- *   --text-secondary      -> `ink-soft` (new)
- *   --text-muted           -> `ink-faint` (new)
+ *   --text-secondary      -> `ink-soft`
+ *   --text-muted           -> `ink-faint`
  *   --brand / --brand-soft  -> `brand` / `brand-soft`
- *   --success(-soft) etc.    -> same names, new
+ *   --success(-soft) etc.    -> same names
  */
 :root {
   --background: #ffffff;
@@ -31,14 +34,14 @@
   --color-surface-subtle: #efece5;
   --color-border: #e4e2de;
 
-  --color-success: #1f8a4c;
-  --color-success-soft: #e5f4ea;
-  --color-warning: #b5730a;
-  --color-warning-soft: #faf0dc;
-  --color-danger: #cf3327;
-  --color-danger-soft: #fbe6e4;
-  --color-info: #2461c7;
-  --color-info-soft: #e7eefb;
+  --color-success: #3d7a5e;
+  --color-success-soft: #e7f1ec;
+  --color-warning: #9c6b1f;
+  --color-warning-soft: #f4eeda;
+  --color-danger: #b3453a;
+  --color-danger-soft: #f5e7e4;
+  --color-info: #3f6690;
+  --color-info-soft: #e7edf3;
 }
 
 @theme inline {

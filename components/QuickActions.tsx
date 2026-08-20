@@ -20,7 +20,7 @@ export default function QuickActions({
           type="button"
           disabled={disabled}
           onClick={() => onSelect(action.label)}
-          className="flex items-center gap-2 rounded-xl border border-border bg-white px-3 py-2.5 text-left text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-orange-50/40 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center gap-2 rounded-xl border border-border bg-white px-3 py-2.5 text-left text-sm font-medium text-ink transition-colors duration-150 hover:border-brand hover:bg-brand-soft/40 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="text-base">{action.emoji}</span>
           <span>{action.label}</span>

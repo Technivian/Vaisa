@@ -16,7 +16,7 @@ export default function Message({ message }: { message: UIMessage }) {
           isCustomer
             ? "bg-ink text-white rounded-br-sm"
             : message.isError
-              ? "bg-red-50 text-red-800 border border-red-200 rounded-bl-sm"
+              ? "bg-danger-soft text-danger border border-danger/25 rounded-bl-sm"
               : "bg-surface text-ink border border-border rounded-bl-sm"
         }`}
       >
