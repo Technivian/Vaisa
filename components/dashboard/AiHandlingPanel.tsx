@@ -12,7 +12,7 @@ export default function AiHandlingPanel() {
   const warning = ACCENT_CLASSES.warning;
 
   return (
-    <SectionPanel title="AI handling" description="How VAISA splits work with your team">
+    <SectionPanel title="AI handling" description="How VAISA handles customer contacts">
       <button
         type="button"
         onClick={() => setShowExplanation((v) => !v)}
