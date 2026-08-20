@@ -1,7 +1,13 @@
 "use client";
 
 import type { EscalationStatus } from "@/lib/escalation";
-import { formatCategory, getAiAssessment, getShortText, type DisplayCase } from "@/lib/dashboardData";
+import {
+  formatCategory,
+  getAiAssessment,
+  getLanguageCode,
+  getShortText,
+  type DisplayCase,
+} from "@/lib/dashboardData";
 import { PriorityBadge, CaseStatusBadge, SampleBadge, PRIORITY_ACCENT } from "@/components/ui/StatusBadge";
 import { ACCENT_CLASSES } from "@/components/ui/accent";
 
@@ -82,7 +88,7 @@ export default function CaseDetail({
         <div className="flex flex-wrap items-center gap-1.5">
           <PriorityBadge urgency={item.urgency} />
           <Chip>{formatCategory(item.reason)}</Chip>
-          <Chip>{item.customerLanguage}</Chip>
+          <Chip>{getLanguageCode(item.customerLanguage)}</Chip>
           {item.isSample ? (
             <CaseStatusBadge status={item.status} />
           ) : (
@@ -102,7 +108,7 @@ export default function CaseDetail({
 
         <Block label="Customer issue">{getShortText(item.summary)}</Block>
 
-        <Block label="AI assessment">{getAiAssessment(item.reason)}</Block>
+        <Block label="VAISA assessment">{getAiAssessment(item.reason)}</Block>
 
         <div className={`rounded-lg border-l-[3px] ${actionAccent.border} ${actionAccent.bg} px-3.5 py-3`}>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
