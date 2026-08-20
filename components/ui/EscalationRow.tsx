@@ -1,7 +1,7 @@
 "use client";
 
 import type { DisplayCase } from "@/lib/dashboardData";
-import { formatCategory, getLanguageCode } from "@/lib/dashboardData";
+import { formatCategory, getLanguageCode, getShortText } from "@/lib/dashboardData";
 import { PriorityBadge, CaseStatusBadge, SampleBadge } from "./StatusBadge";
 
 /** Shared grid-column template so the desktop header row and every
@@ -40,7 +40,7 @@ export default function EscalationRow({
       </div>
 
       <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-ink">{item.summary}</p>
+        <p className="truncate text-sm font-medium text-ink">{getShortText(item.summary, 70)}</p>
         <p className="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[10px] text-ink-faint">
           {item.id}
           {item.isSample && <span className="hidden md:inline">{<SampleBadge />}</span>}

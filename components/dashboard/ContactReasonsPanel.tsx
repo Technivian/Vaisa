@@ -30,10 +30,13 @@ export default function ContactReasonsPanel() {
       <div className="mt-3">
         <InsightRow accent={selected.accent}>
           <span className="font-semibold text-ink">{selected.label}</span>
-          <span className="text-ink-faint"> — {selected.conversations} conversations, </span>
-          <span className="font-medium">{selected.aiResolutionRate}% AI resolution</span>
+          <span className="text-ink-faint">
+            {" "}
+            — {selected.conversations} conversations · {selected.aiResolutionRate}% AI resolution
+          </span>
           <br />
-          <span>{selected.note}</span>
+          <span className="text-ink-faint">Top intents: </span>
+          <span>{selected.topIntents.join(" · ")}</span>
         </InsightRow>
       </div>
     </SectionPanel>

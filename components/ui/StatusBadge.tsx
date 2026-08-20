@@ -1,7 +1,7 @@
 import type { Urgency, EscalationStatus } from "@/lib/escalation";
 import { ACCENT_CLASSES, type Accent } from "./accent";
 
-const PRIORITY_ACCENT: Record<Urgency, Accent> = {
+export const PRIORITY_ACCENT: Record<Urgency, Accent> = {
   high: "danger",
   medium: "warning",
   low: "info",

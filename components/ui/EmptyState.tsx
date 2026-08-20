@@ -12,7 +12,7 @@ export default function EmptyState({
   actionLabel?: string;
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-border bg-surface-subtle/60 px-6 py-8 text-center">
+    <div className="rounded-xl border border-dashed border-border bg-surface-subtle/60 px-6 py-5 text-center">
       <p className="text-sm font-semibold text-ink">{title}</p>
       {description && <p className="mx-auto mt-1 max-w-sm text-xs text-ink-faint">{description}</p>}
       {actionHref && actionLabel && (

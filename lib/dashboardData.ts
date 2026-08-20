@@ -30,7 +30,7 @@ export interface ContactReason {
   accent: AccentToken;
   conversations: number;
   aiResolutionRate: number;
-  note: string;
+  topIntents: string[];
 }
 
 export const CONTACT_REASONS: ContactReason[] = [
@@ -41,7 +41,7 @@ export const CONTACT_REASONS: ContactReason[] = [
     accent: "info",
     conversations: 18,
     aiResolutionRate: 89,
-    note: "Primary intents: order tracking, delivery expectation, carrier information.",
+    topIntents: ["Order tracking", "Delivery expectation", "Carrier information"],
   },
   {
     id: "returns",
@@ -50,7 +50,7 @@ export const CONTACT_REASONS: ContactReason[] = [
     accent: "brand",
     conversations: 11,
     aiResolutionRate: 75,
-    note: "Primary intents: return eligibility, refund timing, exchange policy.",
+    topIntents: ["Return eligibility", "Refund timing", "Exchange policy"],
   },
   {
     id: "product-advice",
@@ -59,7 +59,7 @@ export const CONTACT_REASONS: ContactReason[] = [
     accent: "success",
     conversations: 9,
     aiResolutionRate: 85,
-    note: "Primary intents: battery compatibility, product specifications, accessory fit.",
+    topIntents: ["Battery compatibility", "Specifications", "Accessory fit"],
   },
   {
     id: "technical-support",
@@ -68,7 +68,7 @@ export const CONTACT_REASONS: ContactReason[] = [
     accent: "warning",
     conversations: 6,
     aiResolutionRate: 33,
-    note: "Most complex cases are escalated when safety or product defects are involved.",
+    topIntents: ["Battery diagnostics", "Overheating", "Safety escalation"],
   },
   {
     id: "warranty",
@@ -77,7 +77,7 @@ export const CONTACT_REASONS: ContactReason[] = [
     accent: "ink",
     conversations: 3,
     aiResolutionRate: 45,
-    note: "Warranty eligibility is confirmed by a human colleague, not VAISA — most contacts are reviewed manually.",
+    topIntents: ["Eligibility check", "Proof of purchase", "Human review"],
   },
 ];
 
@@ -97,8 +97,7 @@ export const LANGUAGE_SHARE: LanguageShare[] = [
 export const AI_HANDLING = {
   resolvedPercentage: 72,
   escalatedPercentage: 28,
-  explanation:
-    "VAISA attempts to resolve routine, well-grounded questions automatically. Cases involving uncertainty, safety, disputes or complex technical issues are escalated.",
+  explanation: "Routine cases are automated. Safety, uncertainty and complex issues are escalated.",
 };
 
 /** Short display category for the escalation table/detail, derived from
@@ -121,6 +120,48 @@ export function formatCategory(reason: string): string {
   return reason
     .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** A short, terse classification line for the handoff panel's default
+ * view (e.g. "Potential safety issue") — derived from the same `reason`
+ * slug as the category badge, not a separate model-generated field. This
+ * is display-only compaction; it never changes what's actually stored. */
+const AI_ASSESSMENT_LABELS: Record<string, string> = {
+  safety_issue: "Potential safety issue",
+  product_defect: "Potential product defect",
+  warranty_dispute: "Warranty dispute",
+  refund_dispute: "Refund dispute",
+  return_exception: "Return exception",
+  unresolved_request: "Unresolved technical issue",
+  customer_requested_human: "Requested human agent",
+  insufficient_information: "Needs more information",
+};
+
+export function getAiAssessment(reason: string): string {
+  return AI_ASSESSMENT_LABELS[reason] ?? formatCategory(reason);
+}
+
+const SHORT_TEXT_MAX_LENGTH = 90;
+
+/** Produces a compact, scannable version of a longer piece of AI-written
+ * text (order lookup summaries, recommended actions) for default display
+ * — the cases table and the collapsed handoff view. Prefers the first
+ * sentence; falls back to a clean word-boundary truncation. This only
+ * changes what's rendered, never the underlying stored escalation data —
+ * the full text is always still there (e.g. in the transcript). */
+export function getShortText(text: string, maxLength: number = SHORT_TEXT_MAX_LENGTH): string {
+  const trimmed = text.trim();
+  if (trimmed.length <= maxLength) return trimmed;
+
+  const firstSentenceMatch = trimmed.match(/^.*?[.!?](?=\s|$)/);
+  if (firstSentenceMatch && firstSentenceMatch[0].length <= maxLength) {
+    return firstSentenceMatch[0].trim();
+  }
+
+  const truncated = trimmed.slice(0, maxLength);
+  const lastSpace = truncated.lastIndexOf(" ");
+  const clipped = lastSpace > 40 ? truncated.slice(0, lastSpace) : truncated;
+  return `${clipped.trim()}…`;
 }
 
 const LANGUAGE_CODE_BY_NAME: Record<string, string> = {
@@ -153,10 +194,9 @@ export const SAMPLE_CASES: DisplayCase[] = [
     timestamp: "2026-08-20T07:15:00.000Z",
     reason: "safety_issue",
     customerLanguage: "Dutch",
-    summary: "Product emitted smoke while in use; customer asked whether they could open the housing themselves.",
+    summary: "Product emitted smoke during use. Customer asked about self-repair.",
     urgency: "high",
-    recommendedAction:
-      "Contact the customer immediately, confirm the device is unplugged and the battery removed, and arrange an inspection. Do not authorize self-repair.",
+    recommendedAction: "Contact customer, confirm safe shutdown and arrange inspection. No self-repair.",
     status: "open",
     isSample: true,
     transcript: [
@@ -179,11 +219,9 @@ export const SAMPLE_CASES: DisplayCase[] = [
     timestamp: "2026-08-20T06:40:00.000Z",
     reason: "warranty_dispute",
     customerLanguage: "German",
-    summary:
-      "Customer's cordless drill stopped working after 14 months; asking whether it's covered under warranty and wants an assessment.",
+    summary: "Drill stopped working after 14 months. Asking about warranty coverage.",
     urgency: "medium",
-    recommendedAction:
-      "Review purchase date and registration status, confirm warranty eligibility, and advise the customer on next steps.",
+    recommendedAction: "Confirm warranty eligibility and advise on next steps.",
     status: "open",
     isSample: true,
     transcript: [
@@ -206,11 +244,9 @@ export const SAMPLE_CASES: DisplayCase[] = [
     timestamp: "2026-08-19T15:20:00.000Z",
     reason: "return_exception",
     customerLanguage: "French",
-    summary:
-      "Customer wants to return a product after the standard 14-day window closed; asking whether an exception is possible.",
+    summary: "Return requested after the 14-day window closed.",
     urgency: "low",
-    recommendedAction:
-      "Assess whether a goodwill exception applies and respond with available return options.",
+    recommendedAction: "Assess goodwill exception and respond with return options.",
     status: "open",
     isSample: true,
     transcript: [

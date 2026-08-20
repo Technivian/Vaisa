@@ -39,7 +39,7 @@ function buildKpis(metrics: DemoMetrics): {
       value: String(metrics.escalated),
       supportingText: "Sent to customer service",
       accent: "warning",
-      insight: `${metrics.escalated} simulated conversations required human review. Technical and warranty cases account for most escalations.`,
+      insight: `${metrics.escalated} simulated conversations required human review.`,
     },
     {
       id: "automation",
@@ -47,7 +47,7 @@ function buildKpis(metrics: DemoMetrics): {
       value: `${metrics.automationRate}%`,
       supportingText: `${metrics.resolvedByAI} of ${metrics.conversationsToday} conversations`,
       accent: "brand",
-      insight: `Illustrative automation rate: ${metrics.automationRate}%. A real pilot would establish an actual baseline and target.`,
+      insight: `Illustrative automation rate: ${metrics.automationRate}%. A real pilot would establish the baseline.`,
     },
     {
       id: "response",
@@ -55,15 +55,15 @@ function buildKpis(metrics: DemoMetrics): {
       value: `${metrics.avgResponseTimeSeconds.toFixed(1)}s`,
       supportingText: "AI first response",
       accent: "info",
-      insight: `VAISA's simulated first response time is ${metrics.avgResponseTimeSeconds.toFixed(1)} seconds — illustrative, not a measured production benchmark.`,
+      insight: `Simulated first response time — illustrative, not a measured benchmark.`,
     },
   ];
 }
 
 export default function KpiSection({ metrics }: { metrics: DemoMetrics }) {
   const kpis = buildKpis(metrics);
-  const [selected, setSelected] = useState<KpiId>("automation");
-  const active = kpis.find((k) => k.id === selected) ?? kpis[0];
+  const [selected, setSelected] = useState<KpiId | null>(null);
+  const active = selected ? kpis.find((k) => k.id === selected) : null;
 
   return (
     <div className="space-y-3">
@@ -80,7 +80,7 @@ export default function KpiSection({ metrics }: { metrics: DemoMetrics }) {
           />
         ))}
       </div>
-      <InsightRow accent={active.accent}>{active.insight}</InsightRow>
+      {active && <InsightRow accent={active.accent}>{active.insight}</InsightRow>}
     </div>
   );
 }

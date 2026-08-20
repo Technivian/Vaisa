@@ -88,12 +88,12 @@ export default function CasesSection({ realEscalations }: { realEscalations: Esc
         />
       </div>
 
-      <p className="py-2.5 text-xs text-ink-faint">
+      <p className="py-2 text-xs text-ink-faint">
         Showing {filtered.length} case{filtered.length === 1 ? "" : "s"}
       </p>
 
       {!hasRealCases && (
-        <div className="mb-3 space-y-3">
+        <div className="mb-3 space-y-2.5">
           <EmptyState
             title="No live demo escalations yet"
             description="Trigger a human handoff in the VAISA assistant to see it appear here."
