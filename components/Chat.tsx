@@ -49,7 +49,10 @@ export default function Chat() {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
 
-    setMessages((prev) => [...prev, { id: newId(), role: "customer", text: trimmed }]);
+    setMessages((prev) => [
+      ...prev,
+      { id: newId(), role: "customer", text: trimmed, timestamp: new Date().toISOString() },
+    ]);
     setInput("");
     setLoading(true);
 
@@ -69,6 +72,7 @@ export default function Chat() {
             role: "assistant",
             text: data.error || "Something went wrong. Please try again.",
             isError: true,
+            timestamp: new Date().toISOString(),
           },
         ]);
         return;
@@ -89,6 +93,7 @@ export default function Chat() {
           text: data.reply || "...",
           escalationId: escalation?.id,
           isError: Boolean(data.error),
+          timestamp: new Date().toISOString(),
         },
       ]);
     } catch {
@@ -99,6 +104,7 @@ export default function Chat() {
           role: "assistant",
           text: "Network error — please check your connection and try again.",
           isError: true,
+          timestamp: new Date().toISOString(),
         },
       ]);
     } finally {
@@ -117,7 +123,7 @@ export default function Chat() {
   const showQuickActions = messages.length <= 1;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-1 flex-col">
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5 sm:px-6">
         <p className="text-xs text-ink/50">
           Demo environment — do not enter real personal or order information.
@@ -131,7 +137,10 @@ export default function Chat() {
         </button>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-6">
+      <div
+        ref={scrollRef}
+        className="flex flex-1 flex-col justify-end gap-3 overflow-y-auto px-4 py-4 sm:px-6"
+      >
         {messages.map((message) => (
           <Message key={message.id} message={message} />
         ))}
