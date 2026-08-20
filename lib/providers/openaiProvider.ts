@@ -2,7 +2,7 @@ import type { ResponseInputItem, ResponseFunctionToolCall } from "openai/resourc
 import { getOpenAIClient, getModel, MissingApiKeyError } from "@/lib/openai";
 import { buildSystemPrompt } from "@/lib/agentPrompt";
 import { buildTools, executeFunctionTool } from "@/lib/tools";
-import type { TranscriptTurn, Urgency } from "@/lib/escalation";
+import type { Escalation, TranscriptTurn } from "@/lib/escalation";
 import type { ChatResult } from "./types";
 
 const MAX_TOOL_ITERATIONS = 6;
@@ -67,7 +67,7 @@ export async function runOpenAIChat(
   }
 
   const tools = buildTools();
-  let escalation: { id: string; urgency: Urgency } | undefined;
+  let escalation: Escalation | undefined;
 
   try {
     for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {

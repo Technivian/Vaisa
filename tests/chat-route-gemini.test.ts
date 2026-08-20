@@ -1,5 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { resetEscalations, getEscalations } from "@/lib/escalation";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const { createMock, getClientMock } = vi.hoisted(() => ({
   createMock: vi.fn(),
@@ -35,11 +34,6 @@ describe("POST /api/chat (AI_PROVIDER=gemini)", () => {
     createMock.mockReset();
     getClientMock.mockReset();
     getClientMock.mockImplementation(() => ({ models: { generateContent: createMock } }));
-    resetEscalations();
-  });
-
-  afterEach(() => {
-    resetEscalations();
   });
 
   it("resolves an order lookup through a function-call round trip", async () => {
@@ -150,9 +144,18 @@ describe("POST /api/chat (AI_PROVIDER=gemini)", () => {
     const res = await POST(makeRequest({ transcript: [], message: "Mijn machine begon te roken." }));
     const data = await res.json();
 
-    expect(data.escalation?.urgency).toBe("high");
-    expect(getEscalations()).toHaveLength(1);
-    expect(getEscalations()[0].transcript.some((t) => t.content.includes("roken"))).toBe(true);
+    // The escalation is returned to the client in full (no server-side
+    // store on Vercel — the client persists it to localStorage).
+    expect(data.escalation).toMatchObject({
+      reason: "safety_issue",
+      customerLanguage: "Dutch",
+      urgency: "high",
+      status: "open",
+    });
+    expect(data.escalation.id).toMatch(/^ESC-/);
+    expect(
+      data.escalation.transcript.some((t: { content: string }) => t.content.includes("roken"))
+    ).toBe(true);
   });
 
   it("never calls the model for an empty message and returns 400", async () => {

@@ -149,18 +149,20 @@ Node.js template as-is:
 3. Set the run command to `npm install && npm run dev -- -H 0.0.0.0 -p $PORT`
    so Next.js binds to the port Replit exposes.
 
-Escalations persist to `data/escalations.json` on Replit's filesystem for
-the lifetime of the running repl, which is sufficient for a live demo.
+Escalations are stored in the browser's localStorage (see "Escalation
+persistence" below), not on the server, so this works identically on
+Replit and on stateless hosts like Vercel.
 
 ## Project structure
 
 ```text
 app/
   page.tsx              customer chat page
-  dashboard/page.tsx     employee dashboard (simulated analytics + queue)
+  dashboard/page.tsx     employee dashboard shell (server component)
   api/chat/route.ts      Responses API + tool-calling route (server-only)
 components/               Chat, Message, QuickActions, HandoffCard,
-                           DashboardMetrics, ConversationPanel
+                           DashboardMetrics, ConversationPanel,
+                           DashboardClient (reads localStorage)
 lib/
   openai.ts               OpenAI client + model/vector-store config
   gemini.ts                Gemini client + model/file-search-store config
@@ -173,15 +175,31 @@ lib/
     openaiProvider.ts          OpenAI Responses API tool-calling loop
     geminiProvider.ts          Gemini function-calling loop
   orders.ts                 order lookup logic (shared)
-  escalation.ts              escalation persistence + simulated KPIs (shared)
+  escalation.ts              builds escalation records + simulated KPIs
+                              (pure — no persistence; see below)
+  clientEscalations.ts       browser localStorage read/write/dedupe
 data/
   orders.json               5 fictional demo orders
-  escalations.json          created at runtime, starts empty
 knowledge/                  Markdown knowledge base for File Search
 scripts/
   upload-knowledge.ts       creates/populates the vector store
 tests/                      vitest unit + route tests
 ```
+
+## Escalation persistence
+
+`escalate_case` builds a structured escalation record server-side but does
+**not** write it to disk — Vercel's serverless functions have no durable
+or shared filesystem across invocations, so any server-side file store
+either fails outright or silently disappears between requests. Instead,
+the full escalation record is returned in the `/api/chat` response, and
+the browser saves it to `localStorage` under the key `vaisa_escalations`
+(deduped by id, newest first). The `/dashboard` page reads from the same
+key on the client (via `useSyncExternalStore`, so there's no SSR/hydration
+mismatch) — open it in the same browser that ran the chat to see the case.
+**Escalations are per-browser, not shared across devices or employees** —
+fine for a live demo, not for production. "Reset Demo" clears both the
+chat and `vaisa_escalations`.
 
 ## Testing
 
@@ -192,11 +210,14 @@ npx tsc --noEmit # type check
 ```
 
 Automated tests cover deterministic logic: order lookup (including postal
-code verification and not-found handling), escalation creation and the
-simulated KPI counters, tool execution (including malformed arguments), and
+code verification and not-found handling), escalation record construction
+and the simulated KPI counters, the browser localStorage store (dedup by
+id, newest-first ordering, malformed/empty content handled safely, SSR
+no-`window` safety), tool execution (including malformed arguments), and
 the `/api/chat` tool-calling loop for **both** providers (order lookup
-round trip, escalation round trip, missing-API-key graceful degradation,
-and upstream failure handling) using mocked OpenAI/Gemini clients.
+round trip, escalation round trip with the full escalation record in the
+response, missing-API-key graceful degradation, and upstream failure
+handling) using mocked OpenAI/Gemini clients.
 
 Actual multilingual replies and File Search answers depend on a live
 API call and are verified manually against the running app; they are not
@@ -205,8 +226,8 @@ part of the automated suite since they are non-deterministic.
 ## Notes on scope
 
 This is a **sales proof of concept**, not a production system. Order data
-and escalations are local JSON files with no authentication, no external
-integrations (no WhatsApp, no Zendesk, no CRM), and no database. Escalation
-persistence is best-effort (in-memory during the running process, with a
-best-effort write-through to `data/escalations.json`) — enough for a live
-demo, not enough for production use.
+is a local JSON file and escalations live in browser localStorage — no
+authentication, no external integrations (no WhatsApp, no Zendesk, no
+CRM), and no database. Escalations are per-browser and disappear if the
+user clears site data — enough for a live demo, not enough for production
+use.

@@ -1,14 +1,7 @@
 import Link from "next/link";
-import { getEscalations, getSimulatedMetrics } from "@/lib/escalation";
-import DashboardMetrics from "@/components/DashboardMetrics";
-import ConversationPanel from "@/components/ConversationPanel";
-
-export const dynamic = "force-dynamic";
+import DashboardClient from "@/components/DashboardClient";
 
 export default function DashboardPage() {
-  const escalations = getEscalations();
-  const metrics = getSimulatedMetrics();
-
   return (
     <div className="min-h-screen bg-surface">
       <header className="bg-ink text-white">
@@ -32,8 +25,7 @@ export default function DashboardPage() {
       </header>
 
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
-        <DashboardMetrics metrics={metrics} />
-        <ConversationPanel escalations={escalations} />
+        <DashboardClient />
       </main>
     </div>
   );

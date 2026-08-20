@@ -1,7 +1,7 @@
 import type { Tool } from "openai/resources/responses/responses";
 import { getVectorStoreId } from "./openai";
 import { lookupOrder } from "./orders";
-import { createEscalation, type TranscriptTurn, type Urgency } from "./escalation";
+import { createEscalation, type Escalation, type TranscriptTurn, type Urgency } from "./escalation";
 import { LOOKUP_ORDER_SCHEMA, ESCALATE_CASE_SCHEMA } from "./toolSchemas";
 
 const LOOKUP_ORDER_TOOL: Tool = {
@@ -38,7 +38,7 @@ export interface ToolExecutionContext {
 
 export interface ToolExecutionResult {
   output: Record<string, unknown>;
-  escalation?: { id: string; urgency: Urgency };
+  escalation?: Escalation;
 }
 
 /** Logs demo observability data (tool name, duration, success) without ever
@@ -94,7 +94,7 @@ export async function executeFunctionTool(
       console.log(`[escalation] created ${escalation.id} — urgency=${escalation.urgency}`);
       return {
         output: { created: true, escalationId: escalation.id, status: escalation.status },
-        escalation: { id: escalation.id, urgency: escalation.urgency },
+        escalation,
       };
     }
 

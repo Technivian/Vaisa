@@ -1,12 +1,7 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { executeFunctionTool } from "@/lib/tools";
-import { resetEscalations } from "@/lib/escalation";
 
 describe("executeFunctionTool", () => {
-  afterEach(() => {
-    resetEscalations();
-  });
-
   it("resolves a valid order lookup", async () => {
     const result = await executeFunctionTool(
       "lookup_order",
@@ -41,7 +36,7 @@ describe("executeFunctionTool", () => {
     expect(result.output.error).toBe(true);
   });
 
-  it("creates an escalation and returns its id", async () => {
+  it("creates an escalation and returns the full structured record (no filesystem involved)", async () => {
     const result = await executeFunctionTool(
       "escalate_case",
       JSON.stringify({
@@ -54,7 +49,18 @@ describe("executeFunctionTool", () => {
       { transcript: [{ role: "customer", content: "Mijn machine begon te roken." }] }
     );
     expect(result.output.created).toBe(true);
-    expect(result.escalation?.urgency).toBe("high");
+    expect(result.escalation).toMatchObject({
+      reason: "safety_issue",
+      customerLanguage: "Dutch",
+      summary: "Smoke reported from a power tool.",
+      urgency: "high",
+      recommendedAction: "Immediate safety review.",
+      status: "open",
+    });
+    expect(result.escalation?.id).toMatch(/^ESC-/);
+    expect(result.escalation?.transcript).toEqual([
+      { role: "customer", content: "Mijn machine begon te roken." },
+    ]);
   });
 
   it("returns an error result for an unknown tool name", async () => {

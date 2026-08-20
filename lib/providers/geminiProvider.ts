@@ -8,7 +8,7 @@ import {
 import { buildSystemPrompt } from "@/lib/agentPrompt";
 import { executeFunctionTool } from "@/lib/tools";
 import { LOOKUP_ORDER_SCHEMA, ESCALATE_CASE_SCHEMA } from "@/lib/toolSchemas";
-import type { TranscriptTurn, Urgency } from "@/lib/escalation";
+import type { Escalation, TranscriptTurn } from "@/lib/escalation";
 import type { ChatResult } from "./types";
 
 const MAX_TOOL_ITERATIONS = 6;
@@ -84,7 +84,7 @@ export async function runGeminiChat(
 
   const tools = buildGeminiTools();
   const model = getGeminiModel();
-  let escalation: { id: string; urgency: Urgency } | undefined;
+  let escalation: Escalation | undefined;
 
   try {
     for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {

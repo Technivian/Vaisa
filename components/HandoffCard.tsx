@@ -32,7 +32,7 @@ export default function HandoffCard({ escalation }: { escalation: Escalation }) 
       <div className="space-y-5 px-5 py-4 text-sm">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-ink/40">Language</p>
-          <p className="mt-1 text-ink">{escalation.language}</p>
+          <p className="mt-1 text-ink">{escalation.customerLanguage}</p>
         </div>
 
         <div>

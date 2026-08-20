@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import Message, { type UIMessage } from "./Message";
 import QuickActions from "./QuickActions";
+import { saveEscalation, clearStoredEscalations } from "@/lib/clientEscalations";
+import type { Escalation } from "@/lib/escalation";
 
 type TranscriptItem = Record<string, unknown>;
 
@@ -73,13 +75,19 @@ export default function Chat() {
       }
 
       setTranscript(Array.isArray(data.transcript) ? data.transcript : []);
+
+      const escalation: Escalation | undefined = data.escalation;
+      if (escalation) {
+        saveEscalation(escalation);
+      }
+
       setMessages((prev) => [
         ...prev,
         {
           id: newId(),
           role: "assistant",
           text: data.reply || "...",
-          escalationId: data.escalation?.id,
+          escalationId: escalation?.id,
           isError: Boolean(data.error),
         },
       ]);
@@ -103,6 +111,7 @@ export default function Chat() {
     setTranscript([]);
     setInput("");
     setLoading(false);
+    clearStoredEscalations();
   }
 
   const showQuickActions = messages.length <= 1;

@@ -11,8 +11,13 @@ const URGENCY_DOT: Record<Escalation["urgency"], string> = {
 };
 
 export default function ConversationPanel({ escalations }: { escalations: Escalation[] }) {
-  const [selectedId, setSelectedId] = useState<string | null>(escalations[0]?.id ?? null);
-  const selected = escalations.find((e) => e.id === selectedId) ?? null;
+  // `escalations` arrives asynchronously (read from localStorage after
+  // mount), so it's empty on the very first render. Falling back to the
+  // first escalation here — rather than only in the useState initializer —
+  // means selection still defaults correctly once the real list loads.
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const effectiveSelectedId = selectedId ?? escalations[0]?.id ?? null;
+  const selected = escalations.find((e) => e.id === effectiveSelectedId) ?? null;
 
   if (escalations.length === 0) {
     return (
@@ -35,7 +40,7 @@ export default function ConversationPanel({ escalations }: { escalations: Escala
                 type="button"
                 onClick={() => setSelectedId(escalation.id)}
                 className={`w-full px-4 py-3 text-left transition-colors hover:bg-surface ${
-                  selectedId === escalation.id ? "bg-orange-50/60" : ""
+                  effectiveSelectedId === escalation.id ? "bg-orange-50/60" : ""
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -43,7 +48,7 @@ export default function ConversationPanel({ escalations }: { escalations: Escala
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${URGENCY_DOT[escalation.urgency]}`}
                     />
-                    <span className="text-xs font-semibold text-ink">{escalation.language}</span>
+                    <span className="text-xs font-semibold text-ink">{escalation.customerLanguage}</span>
                   </div>
                   <span className="text-[11px] text-ink/40">
                     {new Date(escalation.timestamp).toLocaleTimeString("nl-NL", {

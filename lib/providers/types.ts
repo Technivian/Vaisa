@@ -1,4 +1,4 @@
-import type { Urgency } from "@/lib/escalation";
+import type { Escalation } from "@/lib/escalation";
 
 /**
  * Common result shape both providers return to app/api/chat/route.ts.
@@ -7,10 +7,14 @@ import type { Urgency } from "@/lib/escalation";
  * it, so the two providers can use completely different internal shapes
  * (OpenAI Responses input items vs. Gemini Content turns) without the UI
  * knowing or caring.
+ *
+ * `escalation`, when present, is the full structured record from
+ * lib/escalation.ts — the client saves it directly to localStorage, since
+ * this app has no server-side escalation store (see lib/clientEscalations.ts).
  */
 export interface ChatResult {
   transcript: unknown[];
   reply: string;
-  escalation?: { id: string; urgency: Urgency };
+  escalation?: Escalation;
   error?: boolean;
 }
