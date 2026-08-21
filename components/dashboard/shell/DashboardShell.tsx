@@ -1,13 +1,15 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ExternalLinkIcon } from "@/components/ui/icons";
+import { ConversationsIcon } from "@/components/ui/icons";
 import { NAV_ITEMS, isActive } from "@/lib/navigation";
+import AssistantPanel from "./AssistantPanel";
 
 export default function DashboardShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen flex-col bg-surface md:flex-row">
@@ -38,13 +40,14 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="space-y-3 border-t border-white/10 px-3 py-4">
-          <Link
-            href="/"
-            className="flex items-center justify-between gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-white/85 transition-colors duration-150 hover:border-brand hover:text-white"
+          <button
+            type="button"
+            onClick={() => setAssistantOpen(true)}
+            className="flex w-full items-center justify-between gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-white/85 transition-colors duration-150 hover:border-brand hover:text-white"
           >
             Open VAISA Assistant
-            <ExternalLinkIcon className="h-3.5 w-3.5" />
-          </Link>
+            <ConversationsIcon className="h-3.5 w-3.5" />
+          </button>
           <div className="px-1 text-[11px] leading-relaxed text-white/35">
             <p className="font-medium text-white/45">Demo environment</p>
             <p>Simulated analytics</p>
@@ -60,13 +63,14 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
             <p className="text-sm font-bold tracking-tight">VAISA</p>
             <p className="text-[11px] text-white/40">VONROC workspace</p>
           </div>
-          <Link
-            href="/"
+          <button
+            type="button"
+            onClick={() => setAssistantOpen(true)}
             className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/85 transition-colors duration-150 hover:border-brand hover:text-white"
           >
             Assistant
-            <ExternalLinkIcon className="h-3 w-3" />
-          </Link>
+            <ConversationsIcon className="h-3 w-3" />
+          </button>
         </div>
         <nav className="flex gap-1 overflow-x-auto px-3 pb-2.5">
           {NAV_ITEMS.map((item) => {
@@ -91,6 +95,8 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
       <main className="min-w-0 flex-1 overflow-x-hidden">
         <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-6">{children}</div>
       </main>
+
+      <AssistantPanel open={assistantOpen} onClose={() => setAssistantOpen(false)} />
     </div>
   );
 }
