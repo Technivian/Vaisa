@@ -45,6 +45,20 @@ export function CaseStatusBadge({ status }: { status: EscalationStatus }) {
   return <Badge accent={STATUS_ACCENT[status]} label={STATUS_LABEL[status]} />;
 }
 
+const OUTCOME_ACCENT: Record<"resolved" | "escalated", Accent> = {
+  resolved: "success",
+  escalated: "warning",
+};
+
+const OUTCOME_LABEL: Record<"resolved" | "escalated", string> = {
+  resolved: "Resolved",
+  escalated: "Escalated",
+};
+
+export function OutcomeBadge({ outcome }: { outcome: "resolved" | "escalated" }) {
+  return <Badge accent={OUTCOME_ACCENT[outcome]} label={OUTCOME_LABEL[outcome]} />;
+}
+
 export function SampleBadge() {
   return (
     <span className="inline-flex items-center rounded-full border border-border bg-surface-subtle px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">

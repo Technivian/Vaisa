@@ -1,17 +1,3 @@
-import type { Escalation } from "./escalation";
-
-/** Decides what the dashboard's case queue should actually display: real,
- * browser-persisted escalations when any exist, or the illustrative
- * SAMPLE_CASES when the list is empty — never a mix of the two, so a real
- * escalation always fully and unambiguously replaces the samples. Pure —
- * easy to test without rendering anything. */
-export function selectDisplayCases(realEscalations: Escalation[]): DisplayCase[] {
-  if (realEscalations.length > 0) {
-    return realEscalations.map((e) => ({ ...e, isSample: false }));
-  }
-  return SAMPLE_CASES;
-}
-
 /**
  * All content in this file is illustrative demo data for the VAISA
  * dashboard — contact-reason mix, language split, and the AI/escalation
@@ -79,19 +65,6 @@ export const CONTACT_REASONS: ContactReason[] = [
     aiResolutionRate: 45,
     topIntents: ["Eligibility check", "Proof of purchase", "Human review"],
   },
-];
-
-export interface LanguageShare {
-  code: string;
-  label: string;
-  percentage: number;
-}
-
-export const LANGUAGE_SHARE: LanguageShare[] = [
-  { code: "NL", label: "Dutch", percentage: 61 },
-  { code: "DE", label: "German", percentage: 18 },
-  { code: "FR", label: "French", percentage: 12 },
-  { code: "EN", label: "English", percentage: 9 },
 ];
 
 export const AI_HANDLING = {
@@ -179,86 +152,3 @@ export function getLanguageCode(customerLanguage: string): string {
   const known = LANGUAGE_CODE_BY_NAME[customerLanguage.trim().toLowerCase()];
   return known ?? customerLanguage.trim().slice(0, 2).toUpperCase();
 }
-
-/** A dashboard-displayable case — either a real, browser-persisted
- * escalation, or one of the illustrative SAMPLE_CASES below. Sample cases
- * are visually and structurally identical to real ones (same detail panel,
- * same table row) but always carry `isSample: true` so they can never be
- * mistaken for genuine demo activity, and are never written to
- * localStorage. */
-export type DisplayCase = Escalation & { isSample: boolean };
-
-export const SAMPLE_CASES: DisplayCase[] = [
-  {
-    id: "ESC-SAMPLE-01",
-    timestamp: "2026-08-20T07:15:00.000Z",
-    reason: "safety_issue",
-    customerLanguage: "Dutch",
-    summary: "Product emitted smoke during use. Customer asked about self-repair.",
-    urgency: "high",
-    recommendedAction: "Contact customer, confirm safe shutdown and arrange inspection. No self-repair.",
-    status: "open",
-    isSample: true,
-    transcript: [
-      { role: "customer", content: "Mijn machine begon te roken tijdens het gebruik." },
-      {
-        role: "assistant",
-        content:
-          "Stop onmiddellijk met het gebruiken van de machine en verwijder de accu als dat veilig is. Maak het apparaat niet zelf open.",
-      },
-      { role: "customer", content: "Oké, mag ik hem zelf openmaken om te kijken wat er mis is?" },
-      {
-        role: "assistant",
-        content:
-          "Nee, dat raad ik af — dit kan gevaarlijk zijn en uw garantie beïnvloeden. Ik zet dit met hoge prioriteit door naar een collega.",
-      },
-    ],
-  },
-  {
-    id: "ESC-SAMPLE-02",
-    timestamp: "2026-08-20T06:40:00.000Z",
-    reason: "warranty_dispute",
-    customerLanguage: "German",
-    summary: "Drill stopped working after 14 months. Asking about warranty coverage.",
-    urgency: "medium",
-    recommendedAction: "Confirm warranty eligibility and advise on next steps.",
-    status: "open",
-    isSample: true,
-    transcript: [
-      { role: "customer", content: "Meine Bohrmaschine funktioniert nach 14 Monaten nicht mehr." },
-      {
-        role: "assistant",
-        content:
-          "Das tut mir leid zu hören. Haben Sie das Produkt registriert, und haben Sie den Kaufbeleg zur Hand?",
-      },
-      { role: "customer", content: "Ja, ich habe die Rechnung noch." },
-      {
-        role: "assistant",
-        content:
-          "Danke. Ich leite dies an einen Kollegen weiter, der die Garantieberechtigung prüfen kann.",
-      },
-    ],
-  },
-  {
-    id: "ESC-SAMPLE-03",
-    timestamp: "2026-08-19T15:20:00.000Z",
-    reason: "return_exception",
-    customerLanguage: "French",
-    summary: "Return requested after the 14-day window closed.",
-    urgency: "low",
-    recommendedAction: "Assess goodwill exception and respond with return options.",
-    status: "open",
-    isSample: true,
-    transcript: [
-      {
-        role: "customer",
-        content: "Je voudrais retourner un produit, mais le délai de 14 jours est dépassé de quelques jours.",
-      },
-      {
-        role: "assistant",
-        content:
-          "Je comprends. Le délai standard est de 14 jours, mais je transmets votre demande à un collègue qui pourra évaluer une exception.",
-      },
-    ],
-  },
-];

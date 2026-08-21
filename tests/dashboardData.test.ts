@@ -1,39 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createEscalation } from "@/lib/escalation";
-import {
-  selectDisplayCases,
-  formatCategory,
-  getAiAssessment,
-  getLanguageCode,
-  getShortText,
-  SAMPLE_CASES,
-} from "@/lib/dashboardData";
-
-describe("selectDisplayCases", () => {
-  it("shows the sample cases when there are no real escalations", () => {
-    const result = selectDisplayCases([]);
-    expect(result).toBe(SAMPLE_CASES);
-    expect(result.every((c) => c.isSample)).toBe(true);
-  });
-
-  it("shows only real escalations, never mixed with samples, when any exist", () => {
-    const real = createEscalation({
-      reason: "safety_issue",
-      customerLanguage: "Dutch",
-      summary: "Smoke reported.",
-      urgency: "high",
-      recommendedAction: "Escalate immediately.",
-      transcript: [],
-    });
-
-    const result = selectDisplayCases([real]);
-
-    expect(result).toHaveLength(1);
-    expect(result[0].isSample).toBe(false);
-    expect(result[0].id).toBe(real.id);
-    expect(result.some((c) => SAMPLE_CASES.some((s) => s.id === c.id))).toBe(false);
-  });
-});
+import { formatCategory, getAiAssessment, getLanguageCode, getShortText } from "@/lib/dashboardData";
 
 describe("formatCategory", () => {
   it("maps known reason slugs to a short category label", () => {
