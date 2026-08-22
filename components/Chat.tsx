@@ -131,7 +131,7 @@ export default function Chat() {
         <button
           type="button"
           onClick={resetDemo}
-          className="shrink-0 rounded-full border border-border px-3 py-1 text-xs font-medium text-ink/60 transition-colors hover:border-brand hover:text-brand-dark"
+          className="shrink-0 text-xs font-medium text-ink/40 underline decoration-dotted underline-offset-2 transition-colors hover:text-brand-dark"
         >
           Reset Demo
         </button>
@@ -162,6 +162,7 @@ export default function Chat() {
           className="flex items-end gap-2"
         >
           <textarea
+            data-chat-input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ConversationsIcon } from "@/components/ui/icons";
@@ -10,6 +10,16 @@ import AssistantPanel from "./AssistantPanel";
 export default function DashboardShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const desktopTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
+
+  function closeAssistant() {
+    setAssistantOpen(false);
+    // Only the trigger visible at the current breakpoint actually
+    // receives focus — focusing a display:none element is a no-op.
+    desktopTriggerRef.current?.focus();
+    mobileTriggerRef.current?.focus();
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-surface md:flex-row">
@@ -41,6 +51,7 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
 
         <div className="space-y-3 border-t border-white/10 px-3 py-4">
           <button
+            ref={desktopTriggerRef}
             type="button"
             onClick={() => setAssistantOpen(true)}
             className="flex w-full items-center justify-between gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-white/85 transition-colors duration-150 hover:border-brand hover:text-white"
@@ -64,6 +75,7 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
             <p className="text-[11px] text-white/40">VONROC workspace</p>
           </div>
           <button
+            ref={mobileTriggerRef}
             type="button"
             onClick={() => setAssistantOpen(true)}
             className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/85 transition-colors duration-150 hover:border-brand hover:text-white"
@@ -96,7 +108,7 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-6">{children}</div>
       </main>
 
-      <AssistantPanel open={assistantOpen} onClose={() => setAssistantOpen(false)} />
+      <AssistantPanel open={assistantOpen} onClose={closeAssistant} />
     </div>
   );
 }
