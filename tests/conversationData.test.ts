@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createEscalation } from "@/lib/escalation";
-import { SAMPLE_CONVERSATIONS, selectConversationRecords, getAiAssessmentForRecord } from "@/lib/conversationData";
+import { SAMPLE_CONVERSATIONS, selectConversationRecords, getConversationStatus } from "@/lib/conversationData";
 
 describe("selectConversationRecords", () => {
   it("shows the sample escalations alongside sample resolved conversations when no real escalations exist", () => {
@@ -74,14 +74,30 @@ describe("conversation traces never leak hidden reasoning", () => {
   });
 });
 
-describe("getAiAssessmentForRecord", () => {
-  it("returns a short assessment for escalated records", () => {
-    const escalated = SAMPLE_CONVERSATIONS.find((r) => r.outcome === "escalated")!;
-    expect(getAiAssessmentForRecord(escalated)).toBe("Potential safety issue");
+describe("every sample conversation has a short, employee-facing summary", () => {
+  it("resolved and escalated conversations both carry a summary", () => {
+    for (const record of SAMPLE_CONVERSATIONS) {
+      expect(record.summary).toBeTruthy();
+      expect(record.summary!.length).toBeLessThan(220);
+    }
+  });
+});
+
+describe("getConversationStatus", () => {
+  it("returns 'resolved' for a resolved conversation", () => {
+    const resolved = SAMPLE_CONVERSATIONS.find((r) => r.outcome === "resolved")!;
+    expect(getConversationStatus(resolved)).toBe("resolved");
   });
 
-  it("returns a resolved message for resolved records", () => {
-    const resolved = SAMPLE_CONVERSATIONS.find((r) => r.outcome === "resolved")!;
-    expect(getAiAssessmentForRecord(resolved)).toBe("Resolved without escalation");
+  it("returns 'urgent' for a high-urgency escalation", () => {
+    const urgent = SAMPLE_CONVERSATIONS.find((r) => r.urgency === "high")!;
+    expect(getConversationStatus(urgent)).toBe("urgent");
+  });
+
+  it("returns 'escalated' for a medium- or low-urgency escalation", () => {
+    const medium = SAMPLE_CONVERSATIONS.find((r) => r.urgency === "medium")!;
+    const low = SAMPLE_CONVERSATIONS.find((r) => r.urgency === "low")!;
+    expect(getConversationStatus(medium)).toBe("escalated");
+    expect(getConversationStatus(low)).toBe("escalated");
   });
 });

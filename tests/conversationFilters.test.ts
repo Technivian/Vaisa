@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { SAMPLE_CONVERSATIONS } from "@/lib/conversationData";
-import { filterConversations, uniqueTopics, DEFAULT_CONVERSATION_FILTERS } from "@/lib/conversationFilters";
+import { SAMPLE_CONVERSATIONS, getConversationStatus } from "@/lib/conversationData";
+import {
+  filterConversations,
+  sortConversationsByPriority,
+  uniqueTopics,
+  DEFAULT_CONVERSATION_FILTERS,
+} from "@/lib/conversationFilters";
 
 describe("filterConversations", () => {
   it("returns everything with the default filters", () => {
@@ -76,5 +81,28 @@ describe("uniqueTopics", () => {
     const topics = uniqueTopics(SAMPLE_CONVERSATIONS);
     expect(topics).toEqual([...new Set(topics)].sort());
     expect(topics).toContain("Order tracking");
+  });
+});
+
+describe("sortConversationsByPriority", () => {
+  it("puts urgent conversations before escalated, and escalated before resolved", () => {
+    const sorted = sortConversationsByPriority(SAMPLE_CONVERSATIONS);
+    const statuses = sorted.map(getConversationStatus);
+    const priorityRank = { urgent: 0, escalated: 1, resolved: 2 };
+    const ranks = statuses.map((s) => priorityRank[s]);
+    expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
+  });
+
+  it("sorts newest first within the same priority tier", () => {
+    const resolvedOnly = SAMPLE_CONVERSATIONS.filter((r) => r.outcome === "resolved");
+    const sorted = sortConversationsByPriority(resolvedOnly);
+    const timestamps = sorted.map((r) => new Date(r.timestamp).getTime());
+    expect(timestamps).toEqual([...timestamps].sort((a, b) => b - a));
+  });
+
+  it("does not mutate the input array", () => {
+    const original = [...SAMPLE_CONVERSATIONS];
+    sortConversationsByPriority(SAMPLE_CONVERSATIONS);
+    expect(SAMPLE_CONVERSATIONS).toEqual(original);
   });
 });

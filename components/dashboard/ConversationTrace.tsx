@@ -1,4 +1,5 @@
 import type { TraceStep } from "@/lib/conversationData";
+import { getKnowledgeLabel } from "@/lib/knowledgeLabels";
 
 /**
  * Renders VAISA's observable activity for a conversation — intent
@@ -16,10 +17,7 @@ export default function ConversationTrace({
 }) {
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">VAISA activity</p>
-        {isSample && <span className="text-[10px] text-ink-faint">Illustrative demo trace</span>}
-      </div>
+      {isSample && <p className="mb-2 text-right text-[10px] text-ink-faint">Illustrative demo trace</p>}
       <ol className="space-y-2">
         {steps.map((step, i) => (
           <li key={i} className="flex items-start gap-2.5 text-xs">
@@ -28,7 +26,9 @@ export default function ConversationTrace({
             </span>
             <div>
               <p className="font-medium text-ink">{step.label}</p>
-              <p className="text-ink-faint">{step.detail}</p>
+              <p className="text-ink-faint">
+                {step.label === "Knowledge searched" ? getKnowledgeLabel(step.detail) : step.detail}
+              </p>
             </div>
           </li>
         ))}

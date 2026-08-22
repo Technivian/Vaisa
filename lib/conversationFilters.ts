@@ -1,4 +1,4 @@
-import type { ConversationRecord } from "./conversationData";
+import { getConversationStatus, type ConversationRecord, type ConversationStatus } from "./conversationData";
 import { getLanguageCode } from "./dashboardData";
 
 export type OutcomeFilter = "all" | "resolved" | "escalated";
@@ -50,4 +50,21 @@ export function filterConversations(
 
 export function uniqueTopics(records: ConversationRecord[]): string[] {
   return Array.from(new Set(records.map((r) => r.topic))).sort();
+}
+
+const STATUS_PRIORITY: Record<ConversationStatus, number> = {
+  urgent: 0,
+  escalated: 1,
+  resolved: 2,
+};
+
+/** Makes the conversation list read as an operational queue: conversations
+ * needing attention float above routine resolved ones, so an employee
+ * sees what needs them first. Newest first within each priority tier. */
+export function sortConversationsByPriority(records: ConversationRecord[]): ConversationRecord[] {
+  return [...records].sort((a, b) => {
+    const priorityDiff = STATUS_PRIORITY[getConversationStatus(a)] - STATUS_PRIORITY[getConversationStatus(b)];
+    if (priorityDiff !== 0) return priorityDiff;
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+  });
 }

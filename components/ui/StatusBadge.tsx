@@ -1,28 +1,11 @@
-import type { Urgency, EscalationStatus } from "@/lib/escalation";
+import type { Urgency } from "@/lib/escalation";
+import type { ConversationStatus } from "@/lib/conversationData";
 import { ACCENT_CLASSES, type Accent } from "./accent";
 
-export const PRIORITY_ACCENT: Record<Urgency, Accent> = {
-  high: "danger",
-  medium: "warning",
-  low: "info",
-};
-
-const PRIORITY_LABEL: Record<Urgency, string> = {
+export const PRIORITY_LABEL: Record<Urgency, string> = {
   high: "High",
   medium: "Medium",
   low: "Low",
-};
-
-const STATUS_ACCENT: Record<EscalationStatus, Accent> = {
-  open: "warning",
-  review: "info",
-  resolved: "success",
-};
-
-const STATUS_LABEL: Record<EscalationStatus, string> = {
-  open: "Open",
-  review: "Review",
-  resolved: "Resolved",
 };
 
 function Badge({ accent, label }: { accent: Accent; label: string }) {
@@ -37,14 +20,6 @@ function Badge({ accent, label }: { accent: Accent; label: string }) {
   );
 }
 
-export function PriorityBadge({ urgency }: { urgency: Urgency }) {
-  return <Badge accent={PRIORITY_ACCENT[urgency]} label={PRIORITY_LABEL[urgency]} />;
-}
-
-export function CaseStatusBadge({ status }: { status: EscalationStatus }) {
-  return <Badge accent={STATUS_ACCENT[status]} label={STATUS_LABEL[status]} />;
-}
-
 const OUTCOME_ACCENT: Record<"resolved" | "escalated", Accent> = {
   resolved: "success",
   escalated: "warning",
@@ -57,6 +32,26 @@ const OUTCOME_LABEL: Record<"resolved" | "escalated", string> = {
 
 export function OutcomeBadge({ outcome }: { outcome: "resolved" | "escalated" }) {
   return <Badge accent={OUTCOME_ACCENT[outcome]} label={OUTCOME_LABEL[outcome]} />;
+}
+
+/** The three-tier status a customer-service employee scans for: resolved
+ * (green, nothing to do), escalated (amber, needs review), urgent (red,
+ * needs attention now). Red is reserved for high-urgency escalations only
+ * — deliberately rare, not a general-purpose "escalated" color. */
+const CONVERSATION_STATUS_ACCENT: Record<ConversationStatus, Accent> = {
+  resolved: "success",
+  escalated: "warning",
+  urgent: "danger",
+};
+
+const CONVERSATION_STATUS_LABEL: Record<ConversationStatus, string> = {
+  resolved: "Resolved",
+  escalated: "Escalated",
+  urgent: "Needs attention",
+};
+
+export function ConversationStatusBadge({ status }: { status: ConversationStatus }) {
+  return <Badge accent={CONVERSATION_STATUS_ACCENT[status]} label={CONVERSATION_STATUS_LABEL[status]} />;
 }
 
 export function SampleBadge() {

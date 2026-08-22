@@ -1,5 +1,5 @@
 import type { Escalation, TranscriptTurn, Urgency, EscalationStatus } from "./escalation";
-import { getAiAssessment, formatCategory } from "./dashboardData";
+import { formatCategory } from "./dashboardData";
 
 /**
  * A single observable step VAISA took during a conversation — intent
@@ -30,12 +30,26 @@ export interface ConversationRecord {
   trace: TraceStep[];
   knowledgeUsed: KnowledgeUsedItem[];
   isSample: boolean;
+  summary?: string;
   // Present only when outcome === "escalated".
   urgency?: Urgency;
   reason?: string;
-  summary?: string;
   recommendedAction?: string;
   status?: EscalationStatus;
+}
+
+/**
+ * The three tiers a customer-service employee actually needs to
+ * distinguish at a glance: a resolved conversation needs nothing, an
+ * escalated one needs review, and a high-urgency escalation needs
+ * attention now. Drives both list-row styling and the detail header
+ * badge from one source of truth.
+ */
+export type ConversationStatus = "resolved" | "escalated" | "urgent";
+
+export function getConversationStatus(record: ConversationRecord): ConversationStatus {
+  if (record.outcome === "resolved") return "resolved";
+  return record.urgency === "high" ? "urgent" : "escalated";
 }
 
 /**
@@ -55,6 +69,7 @@ export const SAMPLE_CONVERSATIONS: ConversationRecord[] = [
     outcome: "resolved",
     durationSeconds: 38,
     isSample: true,
+    summary: "Customer wanted an order status update. VAISA verified the order number and postcode, then confirmed it's on the way.",
     transcript: [
       { role: "customer", content: "Waar is mijn bestelling?" },
       { role: "assistant", content: "Natuurlijk. Wat is uw ordernummer?" },
@@ -84,6 +99,7 @@ export const SAMPLE_CONVERSATIONS: ConversationRecord[] = [
     outcome: "resolved",
     durationSeconds: 29,
     isSample: true,
+    summary: "Customer asked if the CD510DC could drill concrete. VAISA explained it can't and recommended the RH501DC instead.",
     transcript: [
       { role: "customer", content: "Kan ik de CD510DC gebruiken om in beton te boren?" },
       {
@@ -112,6 +128,7 @@ export const SAMPLE_CONVERSATIONS: ConversationRecord[] = [
     outcome: "resolved",
     durationSeconds: 24,
     isSample: true,
+    summary: "Customer asked which battery the RH501DC needs. VAISA confirmed the VPower 20V platform and battery options.",
     transcript: [
       { role: "customer", content: "Welke accu heb ik nodig voor de RH501DC?" },
       {
@@ -140,6 +157,7 @@ export const SAMPLE_CONVERSATIONS: ConversationRecord[] = [
     outcome: "resolved",
     durationSeconds: 51,
     isSample: true,
+    summary: "Customer's drill stopped working. VAISA guided the customer through a battery check. Issue resolved without human intervention.",
     transcript: [
       { role: "customer", content: "Meine Maschine funktioniert nicht mehr." },
       { role: "assistant", content: "Das tut mir leid. Ist der Akku vollständig geladen?" },
@@ -163,6 +181,7 @@ export const SAMPLE_CONVERSATIONS: ConversationRecord[] = [
     outcome: "resolved",
     durationSeconds: 19,
     isSample: true,
+    summary: "Customer asked about returning an order. VAISA explained the 14-day return window and packaging requirement.",
     transcript: [
       { role: "customer", content: "Je voudrais retourner ma commande." },
       {
@@ -340,11 +359,6 @@ export function selectConversationRecords(realEscalations: Escalation[]): Conver
   return [...RESOLVED_SAMPLES, ...escalated].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
-}
-
-export function getAiAssessmentForRecord(record: ConversationRecord): string {
-  if (record.reason) return getAiAssessment(record.reason);
-  return record.outcome === "resolved" ? "Resolved without escalation" : "Escalated for review";
 }
 
 /** Simulated seven-day performance trend — resolution vs escalation
