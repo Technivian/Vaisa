@@ -1,5 +1,8 @@
+"use client";
+
 import type { TraceStep } from "@/lib/conversationData";
 import { getKnowledgeLabel } from "@/lib/knowledgeLabels";
+import { useLocale } from "@/lib/i18n/LocaleContext";
 
 /**
  * Renders VAISA's observable activity for a conversation — intent
@@ -15,9 +18,13 @@ export default function ConversationTrace({
   steps: TraceStep[];
   isSample: boolean;
 }) {
+  const { t } = useLocale();
+
   return (
     <div>
-      {isSample && <p className="mb-2 text-right text-[10px] text-ink-faint">Illustrative demo trace</p>}
+      {isSample && (
+        <p className="mb-2 text-right text-[10px] text-ink-faint">{t.conversations.detail.illustrativeTrace}</p>
+      )}
       <ol className="space-y-2">
         {steps.map((step, i) => (
           <li key={i} className="flex items-start gap-2.5 text-xs">

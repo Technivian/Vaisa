@@ -1,12 +1,8 @@
-import type { Urgency } from "@/lib/escalation";
-import type { ConversationStatus } from "@/lib/conversationData";
-import { ACCENT_CLASSES, type Accent } from "./accent";
+"use client";
 
-export const PRIORITY_LABEL: Record<Urgency, string> = {
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-};
+import type { ConversationStatus } from "@/lib/conversationData";
+import { useLocale } from "@/lib/i18n/LocaleContext";
+import { ACCENT_CLASSES, type Accent } from "./accent";
 
 function Badge({ accent, label }: { accent: Accent; label: string }) {
   const styles = ACCENT_CLASSES[accent];
@@ -25,13 +21,9 @@ const OUTCOME_ACCENT: Record<"resolved" | "escalated", Accent> = {
   escalated: "warning",
 };
 
-const OUTCOME_LABEL: Record<"resolved" | "escalated", string> = {
-  resolved: "Resolved",
-  escalated: "Escalated",
-};
-
 export function OutcomeBadge({ outcome }: { outcome: "resolved" | "escalated" }) {
-  return <Badge accent={OUTCOME_ACCENT[outcome]} label={OUTCOME_LABEL[outcome]} />;
+  const { t } = useLocale();
+  return <Badge accent={OUTCOME_ACCENT[outcome]} label={t.common.status[outcome]} />;
 }
 
 /** The three-tier status a customer-service employee scans for: resolved
@@ -44,20 +36,22 @@ const CONVERSATION_STATUS_ACCENT: Record<ConversationStatus, Accent> = {
   urgent: "danger",
 };
 
-const CONVERSATION_STATUS_LABEL: Record<ConversationStatus, string> = {
-  resolved: "Resolved",
-  escalated: "Escalated",
-  urgent: "Needs attention",
+const CONVERSATION_STATUS_KEY: Record<ConversationStatus, "resolved" | "escalated" | "needsAttention"> = {
+  resolved: "resolved",
+  escalated: "escalated",
+  urgent: "needsAttention",
 };
 
 export function ConversationStatusBadge({ status }: { status: ConversationStatus }) {
-  return <Badge accent={CONVERSATION_STATUS_ACCENT[status]} label={CONVERSATION_STATUS_LABEL[status]} />;
+  const { t } = useLocale();
+  return <Badge accent={CONVERSATION_STATUS_ACCENT[status]} label={t.common.status[CONVERSATION_STATUS_KEY[status]]} />;
 }
 
 export function SampleBadge() {
+  const { t } = useLocale();
   return (
     <span className="inline-flex items-center rounded-full border border-border bg-surface-subtle px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-      Sample
+      {t.common.status.sample}
     </span>
   );
 }

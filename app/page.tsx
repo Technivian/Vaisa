@@ -1,22 +1,31 @@
+"use client";
+
 import Link from "next/link";
 import Chat from "@/components/Chat";
 import PageHeader from "@/components/ui/PageHeader";
+import LanguageToggle from "@/components/ui/LanguageToggle";
+import { useLocale } from "@/lib/i18n/LocaleContext";
 
 export default function Home() {
+  const { t } = useLocale();
+
   return (
     <div className="flex min-h-screen flex-col bg-surface">
       <PageHeader
         eyebrow="VAISA"
         title="VONROC"
-        subtitle="Customer Service"
-        description="AI Customer Service Concept Demo — Not an official VONROC system"
+        subtitle={t.home.subtitle}
+        description={t.home.description}
         action={
-          <Link
-            href="/dashboard"
-            className="hidden shrink-0 rounded-full border border-white/20 px-3.5 py-1.5 text-xs font-medium text-white/80 transition-colors duration-150 hover:border-brand hover:text-white sm:inline-block"
-          >
-            Employee Dashboard →
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
+            <Link
+              href="/dashboard"
+              className="hidden shrink-0 rounded-full border border-white/20 px-3.5 py-1.5 text-xs font-medium text-white/80 transition-colors duration-150 hover:border-brand hover:text-white sm:inline-block"
+            >
+              {t.home.dashboardLink}
+            </Link>
+          </div>
         }
       />
 

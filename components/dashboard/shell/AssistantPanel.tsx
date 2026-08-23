@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Chat from "@/components/Chat";
 import { CloseIcon } from "@/components/ui/icons";
+import { useLocale } from "@/lib/i18n/LocaleContext";
 
 /** Lets a presenter try the live VAISA assistant without leaving the
  * dashboard — same Chat component the customer-facing page uses, so any
@@ -12,6 +13,7 @@ import { CloseIcon } from "@/components/ui/icons";
  * between opens. A side workspace, not a modal: the dashboard stays
  * visible and interactive behind a light backdrop. */
 export default function AssistantPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useLocale();
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function AssistantPanel({ open, onClose }: { open: boolean; onClo
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label="VAISA customer view"
+        aria-label={`${t.assistantPanel.title} — ${t.assistantPanel.subtitle}`}
         className={`absolute right-0 top-0 flex h-full w-full flex-col bg-white shadow-xl transition-transform duration-200 motion-reduce:transition-none sm:max-w-[400px] ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
@@ -56,18 +58,18 @@ export default function AssistantPanel({ open, onClose }: { open: boolean; onClo
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">
             <div>
-              <p className="text-sm font-semibold text-ink">VAISA</p>
-              <p className="text-xs text-ink-faint">Customer view</p>
+              <p className="text-sm font-semibold text-ink">{t.assistantPanel.title}</p>
+              <p className="text-xs text-ink-faint">{t.assistantPanel.subtitle}</p>
             </div>
             <span className="rounded-full border border-border bg-surface-subtle px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
-              Demo
+              {t.assistantPanel.demoBadge}
             </span>
           </div>
           <button
             type="button"
             data-close-button
             onClick={onClose}
-            aria-label="Close VAISA customer view"
+            aria-label={t.assistantPanel.closeLabel}
             className="shrink-0 rounded-full p-1.5 text-ink-faint transition-colors duration-150 hover:bg-surface-subtle hover:text-ink"
           >
             <CloseIcon className="h-4 w-4" />

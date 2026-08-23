@@ -1,9 +1,6 @@
-const ACTIONS = [
-  { emoji: "📦", label: "Waar is mijn bestelling?" },
-  { emoji: "↩️", label: "Ik wil iets retourneren" },
-  { emoji: "🔧", label: "Mijn machine werkt niet" },
-  { emoji: "🔋", label: "Welke accu heb ik nodig?" },
-];
+"use client";
+
+import { useLocale } from "@/lib/i18n/LocaleContext";
 
 export default function QuickActions({
   onSelect,
@@ -12,9 +9,18 @@ export default function QuickActions({
   onSelect: (text: string) => void;
   disabled?: boolean;
 }) {
+  const { t } = useLocale();
+
+  const actions = [
+    { emoji: "📦", label: t.quickActions.orderStatus },
+    { emoji: "↩️", label: t.quickActions.returnItem },
+    { emoji: "🔧", label: t.quickActions.machineNotWorking },
+    { emoji: "🔋", label: t.quickActions.batteryQuestion },
+  ];
+
   return (
     <div className="grid grid-cols-2 gap-2">
-      {ACTIONS.map((action) => (
+      {actions.map((action) => (
         <button
           key={action.label}
           type="button"

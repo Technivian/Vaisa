@@ -4,9 +4,12 @@ import { useState } from "react";
 import type { EscalationStatus } from "@/lib/escalation";
 import type { ConversationRecord } from "@/lib/conversationData";
 import { getConversationStatus } from "@/lib/conversationData";
-import { ConversationStatusBadge, SampleBadge, PRIORITY_LABEL } from "@/components/ui/StatusBadge";
+import { ConversationStatusBadge, SampleBadge } from "@/components/ui/StatusBadge";
 import { ACCENT_CLASSES } from "@/components/ui/accent";
 import Disclosure from "@/components/ui/Disclosure";
+import { useLocale } from "@/lib/i18n/LocaleContext";
+import { format } from "@/lib/i18n/format";
+import type { TranslationDict } from "@/lib/i18n/translations";
 import ConversationTrace from "./ConversationTrace";
 import KnowledgeUsedList from "./KnowledgeUsedList";
 
@@ -34,12 +37,16 @@ function formatDuration(seconds?: number): string {
   return minutes > 0 ? `${minutes}m ${rest}s` : `${rest}s`;
 }
 
-function buildSubtitle(record: ConversationRecord): string {
-  const parts = [record.topic, record.language];
+function translateLanguage(language: string, t: TranslationDict): string {
+  return t.conversations.languageNames[language as keyof typeof t.conversations.languageNames] ?? language;
+}
+
+function buildSubtitle(record: ConversationRecord, t: TranslationDict): string {
+  const parts = [record.topic, translateLanguage(record.language, t)];
   if (record.outcome === "resolved") {
     parts.push(formatDuration(record.durationSeconds));
   } else if (record.urgency) {
-    parts.push(`${PRIORITY_LABEL[record.urgency]} priority`);
+    parts.push(t.conversations.priorityPhrase[record.urgency]);
   }
   return parts.join(" · ");
 }
@@ -51,18 +58,20 @@ function recommendedActionAccent(urgency: ConversationRecord["urgency"]) {
   return urgency === "high" ? ACCENT_CLASSES.danger : ACCENT_CLASSES.warning;
 }
 
-function Transcript({ record }: { record: ConversationRecord }) {
+function Transcript({ record, t }: { record: ConversationRecord; t: TranslationDict }) {
   return (
     <div>
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Conversation</p>
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        {t.conversations.detail.conversationLabel}
+      </p>
       {record.transcript.length === 0 ? (
-        <p className="text-xs text-ink-faint">No transcript captured.</p>
+        <p className="text-xs text-ink-faint">{t.conversations.detail.noTranscript}</p>
       ) : (
         <div className="space-y-3">
           {record.transcript.map((turn, i) => (
             <div key={i}>
               <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-                {turn.role === "customer" ? "Customer" : "VAISA"}
+                {turn.role === "customer" ? t.conversations.detail.customerLabel : t.conversations.detail.vaisaLabel}
               </p>
               <p
                 className={`mt-1 rounded-xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
@@ -88,6 +97,7 @@ export default function ConversationDetail({
   record: ConversationRecord;
   onStatusChange?: (status: EscalationStatus) => void;
 }) {
+  const { t } = useLocale();
   const isEscalated = record.outcome === "escalated";
   const status = getConversationStatus(record);
   const actionAccent = recommendedActionAccent(record.urgency);
@@ -111,24 +121,26 @@ export default function ConversationDetail({
     <div className="flex h-full flex-col overflow-y-auto">
       <div className="border-b border-border px-5 py-3">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-sm font-semibold text-ink">Conversation {record.id}</h2>
+          <h2 className="text-sm font-semibold text-ink">
+            {t.conversations.detail.conversationLabel} {record.id}
+          </h2>
           <ConversationStatusBadge status={status} />
         </div>
         <div className="mt-1 flex items-center gap-2">
-          <p className="text-xs text-ink-faint">{buildSubtitle(record)}</p>
+          <p className="text-xs text-ink-faint">{buildSubtitle(record, t)}</p>
           {record.isSample && <SampleBadge />}
         </div>
       </div>
 
       <div className="space-y-5 px-5 py-4">
-        {record.summary && <Block label="Summary">{record.summary}</Block>}
+        {record.summary && <Block label={t.conversations.detail.summaryLabel}>{record.summary}</Block>}
 
         {isEscalated ? (
           <>
             {record.recommendedAction && (
               <div className={`rounded-lg border-l-[3px] ${actionAccent.border} ${actionAccent.bg} px-3.5 py-3`}>
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-                  Recommended action
+                  {t.conversations.detail.recommendedActionLabel}
                 </p>
                 <p className="mt-1 text-sm font-medium leading-snug text-ink">{record.recommendedAction}</p>
                 <div className="mt-3">
@@ -138,50 +150,52 @@ export default function ConversationDetail({
                       onClick={handleTakeCase}
                       className="rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-150 hover:bg-ink/85"
                     >
-                      Take case
+                      {t.conversations.detail.takeCase}
                     </button>
                   ) : (
                     <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-soft">
                       <span className="h-1.5 w-1.5 rounded-full bg-info" aria-hidden="true" />
-                      {caseStatus === "resolved" ? "Resolved" : "In review"}
+                      {caseStatus === "resolved" ? t.common.status.resolved : t.conversations.detail.inReview}
                     </span>
                   )}
                 </div>
               </div>
             )}
 
-            <Transcript record={record} />
+            <Transcript record={record} t={t} />
 
             <div>
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-                VAISA handoff
+                {t.conversations.detail.handoffLabel}
               </p>
               <div className="grid grid-cols-3 gap-3 text-sm">
                 <div>
-                  <p className="text-[11px] text-ink-faint">Priority</p>
-                  <p className="font-medium text-ink">{record.urgency ? PRIORITY_LABEL[record.urgency] : "—"}</p>
+                  <p className="text-[11px] text-ink-faint">{t.conversations.detail.priorityLabel}</p>
+                  <p className="font-medium text-ink">
+                    {record.urgency ? t.conversations.priorityWord[record.urgency] : "—"}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-ink-faint">Category</p>
+                  <p className="text-[11px] text-ink-faint">{t.conversations.detail.categoryLabel}</p>
                   <p className="font-medium text-ink">{record.topic}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-ink-faint">Language</p>
-                  <p className="font-medium text-ink">{record.language}</p>
+                  <p className="text-[11px] text-ink-faint">{t.conversations.detail.languageLabel}</p>
+                  <p className="font-medium text-ink">{translateLanguage(record.language, t)}</p>
                 </div>
               </div>
             </div>
           </>
         ) : (
           <>
-            <Transcript record={record} />
+            <Transcript record={record} t={t} />
 
             <div className="rounded-lg border-l-[3px] border-success/25 bg-success-soft px-3.5 py-3">
-              <p className="text-sm font-semibold text-success">✓ Resolved by VAISA</p>
-              <p className="mt-1 text-xs text-ink-soft">No employee action required.</p>
+              <p className="text-sm font-semibold text-success">{t.conversations.detail.resolvedByVaisa}</p>
+              <p className="mt-1 text-xs text-ink-soft">{t.conversations.detail.noActionRequired}</p>
               {record.durationSeconds && (
                 <p className="mt-2 text-[11px] text-ink-faint">
-                  Resolution time: {formatDuration(record.durationSeconds)}
+                  {format(t.conversations.detail.resolutionTime, { time: formatDuration(record.durationSeconds) })}
                 </p>
               )}
             </div>
@@ -189,11 +203,17 @@ export default function ConversationDetail({
         )}
 
         <div className="space-y-2 border-t border-border pt-4">
-          <Disclosure labelClosed="View VAISA activity" labelOpen="Hide VAISA activity">
+          <Disclosure
+            labelClosed={t.conversations.detail.viewActivity}
+            labelOpen={t.conversations.detail.hideActivity}
+          >
             <ConversationTrace steps={record.trace} isSample={record.isSample} />
           </Disclosure>
           {record.knowledgeUsed.length > 0 && (
-            <Disclosure labelClosed="View knowledge used" labelOpen="Hide knowledge used">
+            <Disclosure
+              labelClosed={t.conversations.detail.viewKnowledge}
+              labelOpen={t.conversations.detail.hideKnowledge}
+            >
               <KnowledgeUsedList items={record.knowledgeUsed} />
             </Disclosure>
           )}

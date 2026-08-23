@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRealEscalations } from "@/lib/useRealEscalations";
 import { selectConversationRecords } from "@/lib/conversationData";
 import { getKpisForPeriod, KPI_TRENDS, PERIOD_OPTIONS, type Period } from "@/lib/periodMetrics";
+import { useLocale } from "@/lib/i18n/LocaleContext";
 import SectionHeader from "./shell/SectionHeader";
 import MetricCard from "@/components/ui/MetricCard";
 import TrendBadge from "@/components/ui/TrendBadge";
@@ -14,6 +15,7 @@ import RecentConversationsPanel from "./RecentConversationsPanel";
 import { ChevronDownIcon } from "@/components/ui/icons";
 
 export default function OverviewClient() {
+  const { t } = useLocale();
   const [period, setPeriod] = useState<Period>("today");
   const realEscalations = useRealEscalations();
   const kpis = getKpisForPeriod(period, realEscalations.length);
@@ -22,8 +24,8 @@ export default function OverviewClient() {
   return (
     <div className="space-y-5">
       <SectionHeader
-        title="Overview"
-        description="VAISA customer-service performance and activity."
+        title={t.overview.title}
+        description={t.overview.description}
         action={
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -35,7 +37,7 @@ export default function OverviewClient() {
               >
                 {PERIOD_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {t.overview.periodOptions[option.value]}
                   </option>
                 ))}
               </select>
@@ -43,7 +45,7 @@ export default function OverviewClient() {
             </div>
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-soft">
               <span className="h-2 w-2 rounded-full bg-success" />
-              Agent online
+              {t.overview.agentOnline}
             </span>
           </div>
         }
@@ -51,30 +53,30 @@ export default function OverviewClient() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard
-          label="Conversations"
+          label={t.overview.kpi.conversations.label}
           value={String(kpis.conversations)}
-          supportingText="vs previous period"
+          supportingText={t.overview.kpi.conversations.supporting}
           accent="info"
           trend={<TrendBadge value={KPI_TRENDS.conversations} sentiment="positive" />}
         />
         <MetricCard
-          label="AI resolution"
+          label={t.overview.kpi.aiResolution.label}
           value={`${kpis.aiResolutionRate}%`}
-          supportingText="vs previous period"
+          supportingText={t.overview.kpi.aiResolution.supporting}
           accent="success"
           trend={<TrendBadge value={KPI_TRENDS.aiResolutionRate} sentiment="positive" />}
         />
         <MetricCard
-          label="Human escalations"
+          label={t.overview.kpi.humanEscalations.label}
           value={String(kpis.escalated)}
-          supportingText="vs previous period"
+          supportingText={t.overview.kpi.humanEscalations.supporting}
           accent="warning"
           trend={<TrendBadge value={KPI_TRENDS.escalated} sentiment="positive" />}
         />
         <MetricCard
-          label="First response"
+          label={t.overview.kpi.firstResponse.label}
           value={`${kpis.avgResponseTimeSeconds.toFixed(1)}s`}
-          supportingText="AI first response"
+          supportingText={t.overview.kpi.firstResponse.supporting}
           accent="brand"
         />
       </div>

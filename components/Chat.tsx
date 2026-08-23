@@ -5,14 +5,9 @@ import Message, { type UIMessage } from "./Message";
 import QuickActions from "./QuickActions";
 import { saveEscalation, clearStoredEscalations } from "@/lib/clientEscalations";
 import type { Escalation } from "@/lib/escalation";
+import { useLocale } from "@/lib/i18n/LocaleContext";
 
 type TranscriptItem = Record<string, unknown>;
-
-const GREETING: UIMessage = {
-  id: "greeting",
-  role: "assistant",
-  text: "Hoi! Ik ben de VONROC klantenservice-assistent (demo). Waarmee kan ik je helpen? U kunt mij ook in het Engels, Duits of Frans schrijven.",
-};
 
 function newId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -35,7 +30,10 @@ function TypingIndicator() {
 }
 
 export default function Chat() {
-  const [messages, setMessages] = useState<UIMessage[]>([GREETING]);
+  const { t } = useLocale();
+  const [messages, setMessages] = useState<UIMessage[]>(() => [
+    { id: "greeting", role: "assistant", text: t.chat.greeting },
+  ]);
   const [transcript, setTranscript] = useState<TranscriptItem[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -70,7 +68,7 @@ export default function Chat() {
           {
             id: newId(),
             role: "assistant",
-            text: data.error || "Something went wrong. Please try again.",
+            text: data.error || t.chat.genericError,
             isError: true,
             timestamp: new Date().toISOString(),
           },
@@ -102,7 +100,7 @@ export default function Chat() {
         {
           id: newId(),
           role: "assistant",
-          text: "Network error — please check your connection and try again.",
+          text: t.chat.networkError,
           isError: true,
           timestamp: new Date().toISOString(),
         },
@@ -113,7 +111,7 @@ export default function Chat() {
   }
 
   function resetDemo() {
-    setMessages([GREETING]);
+    setMessages([{ id: "greeting", role: "assistant", text: t.chat.greeting }]);
     setTranscript([]);
     setInput("");
     setLoading(false);
@@ -125,15 +123,13 @@ export default function Chat() {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5 sm:px-6">
-        <p className="text-xs text-ink/50">
-          Demo environment — do not enter real personal or order information.
-        </p>
+        <p className="text-xs text-ink/50">{t.chat.disclaimer}</p>
         <button
           type="button"
           onClick={resetDemo}
           className="shrink-0 text-xs font-medium text-ink/40 underline decoration-dotted underline-offset-2 transition-colors hover:text-brand-dark"
         >
-          Reset Demo
+          {t.chat.resetDemo}
         </button>
       </div>
 
@@ -172,7 +168,7 @@ export default function Chat() {
               }
             }}
             rows={1}
-            placeholder="Typ uw vraag..."
+            placeholder={t.chat.placeholder}
             className="max-h-32 flex-1 resize-none rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-ink outline-none focus:border-brand"
           />
           <button
@@ -180,15 +176,19 @@ export default function Chat() {
             disabled={loading || !input.trim()}
             className="shrink-0 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Send
+            {t.chat.send}
           </button>
         </form>
 
         <details className="mt-3 select-none text-xs text-ink/40">
-          <summary className="cursor-pointer">Demo info (for presenter)</summary>
+          <summary className="cursor-pointer">{t.chat.demoInfoLabel}</summary>
           <div className="mt-1.5 space-y-0.5 rounded-lg bg-surface px-3 py-2 font-mono">
-            <p>Demo order: VON-2026-10421</p>
-            <p>Postcode: 3011AA</p>
+            <p>
+              {t.chat.demoOrderLabel}: VON-2026-10421
+            </p>
+            <p>
+              {t.chat.postcodeLabel}: 3011AA
+            </p>
           </div>
         </details>
       </div>

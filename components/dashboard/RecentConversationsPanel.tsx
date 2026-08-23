@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import type { ConversationRecord } from "@/lib/conversationData";
 import { getLanguageCode } from "@/lib/dashboardData";
+import { useLocale } from "@/lib/i18n/LocaleContext";
 import SectionPanel from "@/components/ui/SectionPanel";
 import { OutcomeBadge } from "@/components/ui/StatusBadge";
 
@@ -17,10 +20,14 @@ function formatTime(iso: string): string {
  * static report. Full history, filters, and the inspector live at
  * /dashboard/conversations — each row deep-links there. */
 export default function RecentConversationsPanel({ records }: { records: ConversationRecord[] }) {
+  const { t } = useLocale();
   const recent = records.slice(0, 5);
 
   return (
-    <SectionPanel title="Recent conversations" description="Latest VAISA interactions">
+    <SectionPanel
+      title={t.overview.recentConversations.title}
+      description={t.overview.recentConversations.subtitle}
+    >
       <div className="divide-y divide-border">
         {recent.map((record) => (
           <Link

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import type { TrendPoint } from "@/lib/conversationData";
+import { useLocale } from "@/lib/i18n/LocaleContext";
+import { format } from "@/lib/i18n/format";
 
 const WIDTH = 600;
 const HEIGHT = 200;
@@ -13,6 +15,7 @@ const GRID_LINES = [0, 25, 50, 75, 100];
  * (mobile, via onClick on the same hit-target) reveals the value for a
  * given day. */
 export default function PerformanceLineChart({ data }: { data: TrendPoint[] }) {
+  const { t } = useLocale();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const chartWidth = WIDTH - PADDING.left - PADDING.right;
@@ -28,9 +31,14 @@ export default function PerformanceLineChart({ data }: { data: TrendPoint[] }) {
   const active = activeIndex !== null ? data[activeIndex] : null;
   const hitWidth = data.length > 0 ? chartWidth / data.length : chartWidth;
 
+  function dayLabel(label: string): string {
+    const days: Record<string, string> = t.overview.performance.days;
+    return days[label] ?? label;
+  }
+
   return (
     <div>
-      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="h-auto w-full" role="img" aria-label="Seven day performance trend: AI resolution vs human escalation">
+      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="h-auto w-full" role="img" aria-label={t.overview.performance.chartAriaLabel}>
         {GRID_LINES.map((g) => (
           <g key={g}>
             <line
@@ -49,7 +57,7 @@ export default function PerformanceLineChart({ data }: { data: TrendPoint[] }) {
 
         {data.map((d, i) => (
           <text key={d.label} x={xFor(i)} y={HEIGHT - 6} textAnchor="middle" fontSize="9" className="fill-ink-faint">
-            {d.label}
+            {dayLabel(d.label)}
           </text>
         ))}
 
@@ -85,7 +93,11 @@ export default function PerformanceLineChart({ data }: { data: TrendPoint[] }) {
               onFocus={() => setActiveIndex(i)}
               tabIndex={0}
               role="button"
-              aria-label={`${d.label}: ${d.resolved}% resolved, ${d.escalated}% escalated`}
+              aria-label={format(t.overview.performance.dayAriaLabel, {
+                day: dayLabel(d.label),
+                resolved: d.resolved,
+                escalated: d.escalated,
+              })}
             />
           </g>
         ))}
@@ -94,20 +106,20 @@ export default function PerformanceLineChart({ data }: { data: TrendPoint[] }) {
       <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-4">
           <span className="inline-flex items-center gap-1.5 text-ink-soft">
-            <span className="h-2 w-2 rounded-full bg-success" /> AI resolution
+            <span className="h-2 w-2 rounded-full bg-success" /> {t.overview.performance.aiResolutionLegend}
           </span>
           <span className="inline-flex items-center gap-1.5 text-ink-soft">
-            <span className="h-2 w-2 rounded-full bg-warning" /> Human escalation
+            <span className="h-2 w-2 rounded-full bg-warning" /> {t.overview.performance.humanEscalationLegend}
           </span>
         </div>
         <span className="font-medium text-ink">
           {active ? (
             <>
-              {active.label}: <span className="text-success">{active.resolved}%</span> /{" "}
+              {dayLabel(active.label)}: <span className="text-success">{active.resolved}%</span> /{" "}
               <span className="text-warning">{active.escalated}%</span>
             </>
           ) : (
-            <span className="text-ink-faint">Hover or tap a day</span>
+            <span className="text-ink-faint">{t.overview.performance.hoverHint}</span>
           )}
         </span>
       </div>

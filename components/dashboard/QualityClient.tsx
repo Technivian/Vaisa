@@ -2,44 +2,54 @@
 
 import { useState } from "react";
 import { QUALITY_SCENARIOS, QUALITY_METRICS, type QualityScenario } from "@/lib/qualityData";
+import { useLocale } from "@/lib/i18n/LocaleContext";
+import { format } from "@/lib/i18n/format";
+import type { TranslationDict } from "@/lib/i18n/translations";
 import SectionHeader from "./shell/SectionHeader";
 import SectionPanel from "@/components/ui/SectionPanel";
 import { ACCENT_CLASSES } from "@/components/ui/accent";
 
 const TOTAL_SCENARIOS = QUALITY_SCENARIOS.length;
 
-function PassBadge() {
+function PassBadge({ t }: { t: TranslationDict }) {
   const styles = ACCENT_CLASSES.success;
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${styles.bg} ${styles.text} ${styles.border}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${styles.dot}`} aria-hidden="true" />
-      Pass
+      {t.quality.passBadge}
     </span>
   );
 }
 
-function ScenarioDetail({ scenario }: { scenario: QualityScenario }) {
+function ScenarioDetail({ scenario, t }: { scenario: QualityScenario; t: TranslationDict }) {
+  const name = t.quality.scenarios[scenario.id as keyof typeof t.quality.scenarios]?.name ?? scenario.name;
   return (
     <div className="flex h-full flex-col overflow-y-auto">
       <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{scenario.name}</h2>
-        <PassBadge />
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{name}</h2>
+        <PassBadge t={t} />
       </div>
       <div className="space-y-4 px-5 py-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Test question</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+            {t.quality.testQuestionLabel}
+          </p>
           <p className="mt-1 rounded-lg bg-surface-subtle px-3 py-2 text-sm italic leading-snug text-ink-soft">
             &ldquo;{scenario.testQuestion}&rdquo;
           </p>
         </div>
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Expected behaviour</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+            {t.quality.expectedBehaviourLabel}
+          </p>
           <p className="mt-1 text-sm leading-snug text-ink">{scenario.expectedBehaviour}</p>
         </div>
         <div className="rounded-lg border-l-[3px] border-success/25 bg-success-soft px-3.5 py-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Observed result</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+            {t.quality.observedResultLabel}
+          </p>
           <p className="mt-1 text-sm font-medium leading-snug text-ink">{scenario.observedResult}</p>
         </div>
       </div>
@@ -48,6 +58,7 @@ function ScenarioDetail({ scenario }: { scenario: QualityScenario }) {
 }
 
 export default function QualityClient() {
+  const { t } = useLocale();
   const [selectedId, setSelectedId] = useState(QUALITY_SCENARIOS[0].id);
   const [isRunning, setIsRunning] = useState(false);
   const [lastRunLabel, setLastRunLabel] = useState<string | null>(null);
@@ -70,22 +81,19 @@ export default function QualityClient() {
 
   return (
     <div className="space-y-5">
-      <SectionHeader
-        title="Quality & Safety"
-        description="Validate critical VAISA behaviours before customer use."
-      />
+      <SectionHeader title={t.quality.title} description={t.quality.description} />
 
-      <SectionPanel title="Agent readiness">
+      <SectionPanel title={t.quality.readinessTitle}>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-success" aria-hidden="true" />
             <div>
               <p className="text-sm font-semibold text-ink">
-                {TOTAL_SCENARIOS}/{TOTAL_SCENARIOS} critical scenarios passed — Ready for controlled demo
+                {format(t.quality.readinessSummary, { n: TOTAL_SCENARIOS })}
               </p>
               <p className="mt-0.5 text-xs text-ink-faint">
-                Reflects this demo&apos;s test set, not production certification.
-                {lastRunLabel && ` Last checked ${lastRunLabel}.`}
+                {t.quality.readinessDisclaimer}
+                {lastRunLabel && format(t.quality.lastChecked, { time: lastRunLabel })}
               </p>
             </div>
           </div>
@@ -95,7 +103,7 @@ export default function QualityClient() {
             disabled={isRunning}
             className="shrink-0 rounded-lg bg-brand px-3.5 py-1.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-brand-dark disabled:opacity-60"
           >
-            {isRunning ? "Running checks…" : "Run demo checks"}
+            {isRunning ? t.quality.runningChecks : t.quality.runChecks}
           </button>
         </div>
 
@@ -104,32 +112,33 @@ export default function QualityClient() {
             <p className="text-lg font-bold text-ink">
               {QUALITY_METRICS.grounding.passed}/{QUALITY_METRICS.grounding.total}
             </p>
-            <p className="text-xs text-ink-faint">Grounding</p>
+            <p className="text-xs text-ink-faint">{t.quality.metrics.grounding}</p>
           </div>
           <div>
             <p className="text-lg font-bold text-ink">
               {QUALITY_METRICS.toolBehaviour.passed}/{QUALITY_METRICS.toolBehaviour.total}
             </p>
-            <p className="text-xs text-ink-faint">Tool behaviour</p>
+            <p className="text-xs text-ink-faint">{t.quality.metrics.toolBehaviour}</p>
           </div>
           <div>
             <p className="text-lg font-bold text-ink">
               {QUALITY_METRICS.safety.passed}/{QUALITY_METRICS.safety.total}
             </p>
-            <p className="text-xs text-ink-faint">Safety</p>
+            <p className="text-xs text-ink-faint">{t.quality.metrics.safety}</p>
           </div>
           <div>
             <p className="text-lg font-bold text-ink">{QUALITY_METRICS.languagesSupported}</p>
-            <p className="text-xs text-ink-faint">Languages supported</p>
+            <p className="text-xs text-ink-faint">{t.quality.metrics.languagesSupported}</p>
           </div>
         </div>
       </SectionPanel>
 
-      <SectionPanel title="Scenarios">
+      <SectionPanel title={t.quality.scenariosTitle}>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
           <div className="overflow-hidden rounded-lg border border-border lg:col-span-2">
             {QUALITY_SCENARIOS.map((scenario) => {
               const isSelected = scenario.id === selectedId;
+              const translated = t.quality.scenarios[scenario.id as keyof typeof t.quality.scenarios];
               return (
                 <button
                   key={scenario.id}
@@ -140,16 +149,16 @@ export default function QualityClient() {
                   }`}
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-medium text-ink">{scenario.name}</p>
-                    <p className="truncate text-xs text-ink-faint">{scenario.summary}</p>
+                    <p className="truncate font-medium text-ink">{translated?.name ?? scenario.name}</p>
+                    <p className="truncate text-xs text-ink-faint">{translated?.summary ?? scenario.summary}</p>
                   </div>
-                  <PassBadge />
+                  <PassBadge t={t} />
                 </button>
               );
             })}
           </div>
           <div className="overflow-hidden rounded-lg border border-border lg:col-span-3">
-            <ScenarioDetail scenario={selected} />
+            <ScenarioDetail scenario={selected} t={t} />
           </div>
         </div>
       </SectionPanel>

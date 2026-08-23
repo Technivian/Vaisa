@@ -1,3 +1,8 @@
+"use client";
+
+import { useLocale } from "@/lib/i18n/LocaleContext";
+import { format } from "@/lib/i18n/format";
+
 export interface UIMessage {
   id: string;
   role: "customer" | "assistant";
@@ -19,6 +24,7 @@ function formatTime(iso: string): string {
 }
 
 export default function Message({ message }: { message: UIMessage }) {
+  const { t } = useLocale();
   const isCustomer = message.role === "customer";
 
   return (
@@ -36,7 +42,7 @@ export default function Message({ message }: { message: UIMessage }) {
         {message.escalationId && (
           <div className="mt-2 pt-2 border-t border-black/10 text-xs font-medium text-brand-dark flex items-center gap-1.5">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand" />
-            Case {message.escalationId} passed to a colleague
+            {format(t.chat.escalationNotice, { id: message.escalationId })}
           </div>
         )}
       </div>

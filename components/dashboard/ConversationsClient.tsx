@@ -15,6 +15,8 @@ import {
   type LanguageFilter,
 } from "@/lib/conversationFilters";
 import { getLanguageCode } from "@/lib/dashboardData";
+import { useLocale } from "@/lib/i18n/LocaleContext";
+import { format } from "@/lib/i18n/format";
 import SectionHeader from "./shell/SectionHeader";
 import SectionPanel from "@/components/ui/SectionPanel";
 import FilterControl from "@/components/ui/FilterControl";
@@ -31,19 +33,6 @@ const SELECTED_ROW_ACCENT: Record<ConversationStatus, string> = {
   urgent: "border-l-danger/25",
 };
 
-const OUTCOME_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "resolved", label: "Resolved" },
-  { value: "escalated", label: "Escalated" },
-];
-const LANGUAGE_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "NL", label: "NL" },
-  { value: "DE", label: "DE" },
-  { value: "FR", label: "FR" },
-  { value: "EN", label: "EN" },
-];
-
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("nl-NL", {
     timeZone: "Europe/Amsterdam",
@@ -53,6 +42,7 @@ function formatTime(iso: string): string {
 }
 
 export default function ConversationsClient() {
+  const { t } = useLocale();
   const searchParams = useSearchParams();
   const preselectId = searchParams.get("select");
 
@@ -67,48 +57,64 @@ export default function ConversationsClient() {
   const effectiveSelectedId = selectedId ?? sorted[0]?.id ?? null;
   const selected = sorted.find((r) => r.id === effectiveSelectedId) ?? records.find((r) => r.id === effectiveSelectedId) ?? null;
 
+  const outcomeOptions = [
+    { value: "all", label: t.conversations.filters.all },
+    { value: "resolved", label: t.conversations.filters.resolved },
+    { value: "escalated", label: t.conversations.filters.escalated },
+  ];
+  const languageOptions = [
+    { value: "all", label: t.conversations.filters.all },
+    { value: "NL", label: "NL" },
+    { value: "DE", label: "DE" },
+    { value: "FR", label: "FR" },
+    { value: "EN", label: "EN" },
+  ];
+
   function handleStatusChange(id: string, status: EscalationStatus) {
     updateEscalationStatus(id, status);
   }
 
   return (
     <div className="space-y-5">
-      <SectionHeader
-        title="Conversations"
-        description="Inspect how VAISA handled individual customer interactions."
-      />
+      <SectionHeader title={t.conversations.title} description={t.conversations.description} />
 
-      <SectionPanel title="All conversations" description={`${sorted.length} of ${records.length} shown`}>
+      <SectionPanel
+        title={t.conversations.panelTitle}
+        description={format(t.conversations.shownCount, { shown: sorted.length, total: records.length })}
+      >
         <div className="flex flex-wrap items-center gap-2.5 border-b border-border pb-3">
           <input
             type="text"
-            placeholder="Search conversations..."
+            placeholder={t.conversations.searchPlaceholder}
             value={filters.query}
             onChange={(e) => setFilters((f) => ({ ...f, query: e.target.value }))}
             className="min-w-[160px] flex-1 rounded-lg border border-border bg-white px-3 py-1.5 text-xs text-ink outline-none transition-colors focus:border-brand"
           />
           <FilterControl
-            label="Outcome"
+            label={t.conversations.filters.outcome}
             value={filters.outcome}
-            options={OUTCOME_OPTIONS}
+            options={outcomeOptions}
             onChange={(v) => setFilters((f) => ({ ...f, outcome: v as OutcomeFilter }))}
           />
           <FilterControl
-            label="Language"
+            label={t.conversations.filters.language}
             value={filters.language}
-            options={LANGUAGE_OPTIONS}
+            options={languageOptions}
             onChange={(v) => setFilters((f) => ({ ...f, language: v as LanguageFilter }))}
           />
           <FilterControl
-            label="Topic"
+            label={t.conversations.filters.topic}
             value={filters.topic}
-            options={[{ value: "all", label: "All" }, ...topics.map((t) => ({ value: t, label: t }))]}
+            options={[
+              { value: "all", label: t.conversations.filters.all },
+              ...topics.map((topic) => ({ value: topic, label: topic })),
+            ]}
             onChange={(v) => setFilters((f) => ({ ...f, topic: v }))}
           />
         </div>
 
         {sorted.length === 0 ? (
-          <p className="px-1 py-8 text-center text-sm text-ink-faint">No conversations match these filters.</p>
+          <p className="px-1 py-8 text-center text-sm text-ink-faint">{t.conversations.noMatch}</p>
         ) : (
           <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-5">
             <div className="overflow-hidden rounded-lg border border-border lg:col-span-2">

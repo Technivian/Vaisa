@@ -2,15 +2,16 @@ import { OverviewIcon, ConversationsIcon, QualityIcon, KnowledgeIcon } from "@/c
 
 export interface NavItem {
   href: string;
-  label: string;
+  /** Key into `t.shell.nav` — labels are translated, not hardcoded here. */
+  key: "overview" | "conversations" | "quality" | "knowledge";
   Icon: typeof OverviewIcon;
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Overview", Icon: OverviewIcon },
-  { href: "/dashboard/conversations", label: "Conversations", Icon: ConversationsIcon },
-  { href: "/dashboard/quality", label: "Quality", Icon: QualityIcon },
-  { href: "/dashboard/knowledge", label: "Knowledge", Icon: KnowledgeIcon },
+  { href: "/dashboard", key: "overview", Icon: OverviewIcon },
+  { href: "/dashboard/conversations", key: "conversations", Icon: ConversationsIcon },
+  { href: "/dashboard/quality", key: "quality", Icon: QualityIcon },
+  { href: "/dashboard/knowledge", key: "knowledge", Icon: KnowledgeIcon },
 ];
 
 /** The Overview link (`/dashboard`) only highlights on an exact match —
