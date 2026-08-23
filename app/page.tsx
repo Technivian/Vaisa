@@ -21,7 +21,7 @@ export default function Home() {
             <LanguageToggle />
             <Link
               href="/dashboard"
-              className="hidden shrink-0 rounded-full border border-white/20 px-3.5 py-1.5 text-xs font-medium text-white/80 transition-colors duration-150 hover:border-brand hover:text-white sm:inline-block"
+              className="hidden shrink-0 rounded-full border border-white/30 px-3.5 py-1.5 text-xs font-medium text-white/85 transition-colors duration-150 hover:border-white hover:bg-white/10 hover:text-white sm:inline-block"
             >
               {t.home.dashboardLink}
             </Link>

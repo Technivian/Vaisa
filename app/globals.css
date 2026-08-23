@@ -7,7 +7,7 @@
  * dependency — just the same design discipline): every semantic colour is
  * desaturated and shares the app's warm-neutral undertone, rather than
  * using default-chart primaries (pure #ff0000 red, pure #0000ff blue,
- * etc). One confident accent (the VONROC coral) carries the brand; the
+ * etc). One confident accent (VONROC's brand teal) carries the brand; the
  * status colours are muted enough to sit quietly until they need to mean
  * something, so a KPI row or badge set doesn't read like a spreadsheet.
  *
@@ -24,9 +24,9 @@
 :root {
   --background: #ffffff;
   --foreground: #17181a;
-  --color-brand: #e5590c;
-  --color-brand-dark: #c94b09;
-  --color-brand-soft: #fbe9df;
+  --color-brand: #129c8a;
+  --color-brand-dark: #0d7a6b;
+  --color-brand-soft: #e0f4f0;
   --color-ink: #17181a;
   --color-ink-soft: #57544d;
   --color-ink-faint: #8c887e;

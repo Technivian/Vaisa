@@ -55,13 +55,13 @@ export default function AssistantPanel({ open, onClose }: { open: boolean; onClo
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between bg-brand px-4 py-3 text-white">
           <div className="flex items-center gap-2">
             <div>
-              <p className="text-sm font-semibold text-ink">{t.assistantPanel.title}</p>
-              <p className="text-xs text-ink-faint">{t.assistantPanel.subtitle}</p>
+              <p className="text-sm font-semibold">{t.assistantPanel.title}</p>
+              <p className="text-xs text-white/75">{t.assistantPanel.subtitle}</p>
             </div>
-            <span className="rounded-full border border-border bg-surface-subtle px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
+            <span className="rounded-full border border-white/30 bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/85">
               {t.assistantPanel.demoBadge}
             </span>
           </div>
@@ -70,7 +70,7 @@ export default function AssistantPanel({ open, onClose }: { open: boolean; onClo
             data-close-button
             onClick={onClose}
             aria-label={t.assistantPanel.closeLabel}
-            className="shrink-0 rounded-full p-1.5 text-ink-faint transition-colors duration-150 hover:bg-surface-subtle hover:text-ink"
+            className="shrink-0 rounded-full p-1.5 text-white/80 transition-colors duration-150 hover:bg-white/10 hover:text-white"
           >
             <CloseIcon className="h-4 w-4" />
           </button>
